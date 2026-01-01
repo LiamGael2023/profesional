@@ -20,12 +20,13 @@ class User {
     // Buscar usuario por username o email
     public function findByUsernameOrEmail($identifier) {
         $query = "SELECT * FROM " . $this->table . "
-                  WHERE (username = :identifier OR email = :identifier)
+                  WHERE (username = :identifier1 OR email = :identifier2)
                   AND is_active = 1
                   LIMIT 1";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':identifier', $identifier);
+        $stmt->bindParam(':identifier1', $identifier);
+        $stmt->bindParam(':identifier2', $identifier);
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);

@@ -1,10 +1,18 @@
+<?php
+// Cargar configuraciones dinámicas
+$appName = getAppName();
+$headerBgColor = getHeaderBgColor();
+$headerTextColor = getHeaderTextColor();
+$logoDesktop = getLogoUrl('desktop');
+$logoMobile = getLogoUrl('mobile');
+?>
 <!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title><?php echo $pageTitle ?? 'Dashboard'; ?> - <?php echo APP_NAME; ?></title>
+    <title><?php echo $pageTitle ?? 'Dashboard'; ?> - <?php echo $appName; ?></title>
     <!-- CSS de Tabler -->
     <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta19/dist/css/tabler.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet"/>
@@ -12,12 +20,33 @@
         .navbar-brand-image {
             height: 2rem;
         }
+        .navbar-brand-image-mobile {
+            height: 2rem;
+            width: 2rem;
+            object-fit: contain;
+        }
+        /* Estilos dinámicos del header */
+        .navbar-custom {
+            background-color: <?php echo $headerBgColor; ?> !important;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .navbar-brand a,
+        .navbar-custom .nav-link,
+        .navbar-custom .navbar-toggler-icon {
+            color: <?php echo $headerTextColor; ?> !important;
+        }
+        .navbar-custom .nav-link:hover {
+            opacity: 0.8;
+        }
+        .navbar-custom .dropdown-toggle::after {
+            border-top-color: <?php echo $headerTextColor; ?>;
+        }
     </style>
 </head>
 <body>
     <div class="page">
         <!-- Navbar -->
-        <header class="navbar navbar-expand-md navbar-light d-print-none">
+        <header class="navbar navbar-expand-md d-print-none navbar-custom">
             <div class="container-xl">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
                     <span class="navbar-toggler-icon"></span>
@@ -25,9 +54,24 @@
 
                 <!-- Logo -->
                 <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                    <a href="<?php echo APP_URL; ?>/dashboard">
-                        <i class="ti ti-lock-square-rounded text-primary" style="font-size: 2rem;"></i>
-                        <span class="ms-2"><?php echo APP_NAME; ?></span>
+                    <a href="<?php echo APP_URL; ?>/dashboard" style="color: <?php echo $headerTextColor; ?>;">
+                        <?php if ($logoDesktop): ?>
+                            <img src="<?php echo $logoDesktop; ?>"
+                                 alt="<?php echo $appName; ?>"
+                                 class="navbar-brand-image d-none d-md-inline">
+                            <?php if ($logoMobile): ?>
+                                <img src="<?php echo $logoMobile; ?>"
+                                     alt="<?php echo $appName; ?>"
+                                     class="navbar-brand-image-mobile d-md-none">
+                            <?php else: ?>
+                                <img src="<?php echo $logoDesktop; ?>"
+                                     alt="<?php echo $appName; ?>"
+                                     class="navbar-brand-image-mobile d-md-none">
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <i class="ti ti-lock-square-rounded" style="font-size: 2rem; color: <?php echo $headerTextColor; ?>;"></i>
+                            <span class="ms-2"><?php echo $appName; ?></span>
+                        <?php endif; ?>
                     </a>
                 </h1>
 
@@ -74,9 +118,9 @@
                                 <i class="ti ti-user me-2"></i>
                                 Mi Perfil
                             </a>
-                            <a href="#" class="dropdown-item">
-                                <i class="ti ti-settings me-2"></i>
-                                Configuración
+                            <a href="<?php echo APP_URL; ?>/settings" class="dropdown-item">
+                                <i class="ti ti-palette me-2"></i>
+                                Personalización
                             </a>
                             <div class="dropdown-divider"></div>
                             <a href="<?php echo APP_URL; ?>/logout" class="dropdown-item">
@@ -121,9 +165,9 @@
                                                 <i class="ti ti-chart-bar me-2"></i>
                                                 Reportes
                                             </a>
-                                            <a class="dropdown-item" href="#">
-                                                <i class="ti ti-settings me-2"></i>
-                                                Configuración
+                                            <a class="dropdown-item" href="<?php echo APP_URL; ?>/settings">
+                                                <i class="ti ti-palette me-2"></i>
+                                                Personalización
                                             </a>
                                         </div>
                                     </div>

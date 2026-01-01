@@ -17,6 +17,15 @@ CREATE TABLE IF NOT EXISTS users (
     is_active TINYINT(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla de configuración del sistema
+CREATE TABLE IF NOT EXISTS settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insertar usuarios de prueba (password: admin123)
 -- Nota: Si los usuarios ya existen, se actualizarán
 INSERT INTO users (username, email, password, full_name) VALUES
@@ -25,3 +34,13 @@ INSERT INTO users (username, email, password, full_name) VALUES
 ON DUPLICATE KEY UPDATE
     password = VALUES(password),
     full_name = VALUES(full_name);
+
+-- Insertar configuraciones por defecto
+INSERT INTO settings (setting_key, setting_value) VALUES
+('app_name', 'MVC Login System'),
+('logo_desktop', ''),
+('logo_mobile', ''),
+('header_bg_color', '#206bc4'),
+('header_text_color', 'auto')
+ON DUPLICATE KEY UPDATE
+    setting_value = VALUES(setting_value);

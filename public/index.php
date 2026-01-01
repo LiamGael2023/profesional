@@ -29,6 +29,9 @@ spl_autoload_register(function ($class) {
     }
 });
 
+// Cargar funciones helper
+require_once APP_PATH . '/helpers/functions.php';
+
 // Obtener la URL
 $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'login';
 $url = filter_var($url, FILTER_SANITIZE_URL);
@@ -63,6 +66,17 @@ switch ($controller) {
             call_user_func_array([$dashboardController, $method], $params);
         } else {
             $dashboardController->index();
+        }
+        break;
+
+    case 'settings':
+        $settingsController = new SettingsController();
+        if ($method === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $settingsController->update();
+        } elseif ($method === 'deleteLogo' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $settingsController->deleteLogo();
+        } else {
+            $settingsController->index();
         }
         break;
 

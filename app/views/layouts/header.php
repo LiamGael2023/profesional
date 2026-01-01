@@ -145,22 +145,38 @@ $logoMobile = getLogoUrl('mobile');
                                     </span>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?php echo APP_URL; ?>/personas">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <i class="ti ti-users"></i>
+                                    </span>
+                                    <span class="nav-link-title">
+                                        Personas
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?php echo APP_URL; ?>/agremiados">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <i class="ti ti-id-badge-2"></i>
+                                    </span>
+                                    <span class="nav-link-title">
+                                        Agremiados
+                                    </span>
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="outside" role="button" aria-expanded="false">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <i class="ti ti-package"></i>
                                     </span>
                                     <span class="nav-link-title">
-                                        Módulos
+                                        Más
                                     </span>
                                 </a>
                                 <div class="dropdown-menu">
                                     <div class="dropdown-menu-columns">
                                         <div class="dropdown-menu-column">
-                                            <a class="dropdown-item" href="#">
-                                                <i class="ti ti-users me-2"></i>
-                                                Usuarios
-                                            </a>
                                             <a class="dropdown-item" href="#">
                                                 <i class="ti ti-chart-bar me-2"></i>
                                                 Reportes

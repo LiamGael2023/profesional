@@ -80,6 +80,24 @@ switch ($controller) {
         }
         break;
 
+    case 'personas':
+        $personController = new PersonController();
+        if (method_exists($personController, $method)) {
+            call_user_func_array([$personController, $method], $params);
+        } else {
+            $personController->index();
+        }
+        break;
+
+    case 'agremiados':
+        $agremiadoController = new AgremiadoController();
+        if (method_exists($agremiadoController, $method)) {
+            call_user_func_array([$agremiadoController, $method], $params);
+        } else {
+            $agremiadoController->index();
+        }
+        break;
+
     case '':
     case 'home':
     case 'index':

@@ -17,7 +17,11 @@ CREATE TABLE IF NOT EXISTS users (
     is_active TINYINT(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insertar usuario de prueba (password: admin123)
+-- Insertar usuarios de prueba (password: admin123)
+-- Nota: Si los usuarios ya existen, se actualizarán
 INSERT INTO users (username, email, password, full_name) VALUES
-('admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador del Sistema'),
-('usuario1', 'usuario1@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Usuario Demo');
+('admin', 'admin@example.com', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHeFpDRTJxjgPTU0YdF3zzcqI2mFxJHXZe', 'Administrador del Sistema'),
+('usuario1', 'usuario1@example.com', '$2y$10$e0MYzXyjpJS7Pd0RVvHwHeFpDRTJxjgPTU0YdF3zzcqI2mFxJHXZe', 'Usuario Demo')
+ON DUPLICATE KEY UPDATE
+    password = VALUES(password),
+    full_name = VALUES(full_name);

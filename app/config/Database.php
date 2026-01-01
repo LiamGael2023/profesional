@@ -1,6 +1,7 @@
 <?php
 class Database {
     private $host = DB_HOST;
+    private $port = DB_PORT;
     private $user = DB_USER;
     private $pass = DB_PASS;
     private $dbname = DB_NAME;
@@ -16,7 +17,7 @@ class Database {
         $this->conn = null;
 
         try {
-            $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname . ';charset=utf8mb4';
+            $dsn = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbname . ';charset=utf8mb4';
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

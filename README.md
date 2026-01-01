@@ -2,6 +2,8 @@
 
 Sistema de autenticación completo desarrollado en PHP usando el patrón MVC (Modelo-Vista-Controlador) y la interfaz de usuario de Tabler.io.
 
+> **⚠️ USUARIOS DE WINDOWS**: Si estás usando XAMPP/WAMP en Windows y obtienes un error 404, consulta el archivo [INSTALACION_WINDOWS.md](INSTALACION_WINDOWS.md) para instrucciones detalladas de configuración.
+
 ## Características
 
 ✨ **Diseño moderno con Tabler.io**
@@ -24,9 +26,14 @@ Sistema de autenticación completo desarrollado en PHP usando el patrón MVC (Mo
 ## Requisitos
 
 - PHP 7.4 o superior
-- MySQL 5.7 o superior
+- MySQL 5.7 o superior (configurado en puerto **3307** por defecto)
 - Apache con mod_rewrite habilitado
 - Extensión PDO de PHP
+
+### Para Windows (XAMPP/WAMP)
+- Asegúrate de que `mod_rewrite` esté habilitado
+- Configura `AllowOverride All` en `httpd.conf`
+- Ver [INSTALACION_WINDOWS.md](INSTALACION_WINDOWS.md) para más detalles
 
 ## Instalación
 
@@ -39,13 +46,21 @@ cd profesional
 
 ### 2. Configurar la base de datos
 
-Importa el archivo `database.sql` en tu servidor MySQL:
+**Importante**: El sistema está configurado para usar MySQL en el puerto **3307**.
+
+#### Opción A - Línea de comandos:
 
 ```bash
+# Si tu MySQL está en el puerto 3307
+mysql -u root -p -P 3307 < database.sql
+
+# Si tu MySQL está en el puerto 3306 (default)
 mysql -u root -p < database.sql
 ```
 
-O desde phpMyAdmin, importa el archivo `database.sql`.
+#### Opción B - phpMyAdmin:
+
+Importa el archivo `database.sql` desde phpMyAdmin.
 
 ### 3. Configurar la aplicación
 
@@ -53,8 +68,9 @@ Edita el archivo `app/config/config.php` con tus credenciales de base de datos:
 
 ```php
 define('DB_HOST', 'localhost');
-define('DB_USER', 'tu_usuario');
-define('DB_PASS', 'tu_contraseña');
+define('DB_PORT', '3307');        // Cambia a '3306' si usas el puerto por defecto
+define('DB_USER', 'root');        // Tu usuario de MySQL
+define('DB_PASS', '');            // Tu contraseña de MySQL
 define('DB_NAME', 'mvc_login');
 define('APP_URL', 'http://localhost/profesional');
 ```

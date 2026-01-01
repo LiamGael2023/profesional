@@ -44,3 +44,59 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('header_text_color', 'auto')
 ON DUPLICATE KEY UPDATE
     setting_value = VALUES(setting_value);
+
+-- Tabla de personas
+CREATE TABLE IF NOT EXISTS personas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_documento ENUM('DNI', 'CE', 'Pasaporte', 'RUC') DEFAULT 'DNI',
+    numero_documento VARCHAR(20) NOT NULL UNIQUE,
+    nombres VARCHAR(100) NOT NULL,
+    apellido_paterno VARCHAR(100) NOT NULL,
+    apellido_materno VARCHAR(100),
+    fecha_nacimiento DATE,
+    genero ENUM('Masculino', 'Femenino', 'Otro') DEFAULT 'Masculino',
+    estado_civil ENUM('Soltero', 'Casado', 'Divorciado', 'Viudo', 'Conviviente') DEFAULT 'Soltero',
+    nacionalidad VARCHAR(50) DEFAULT 'Peruana',
+    email VARCHAR(100),
+    telefono VARCHAR(20),
+    celular VARCHAR(20),
+    direccion TEXT,
+    distrito VARCHAR(100),
+    provincia VARCHAR(100),
+    departamento VARCHAR(100),
+    foto VARCHAR(255),
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla de agremiados
+CREATE TABLE IF NOT EXISTS agremiados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    persona_id INT NOT NULL,
+    numero_colegiatura VARCHAR(20) NOT NULL UNIQUE,
+    fecha_colegiatura DATE NOT NULL,
+    universidad VARCHAR(200),
+    especialidad VARCHAR(200),
+    anio_graduacion INT,
+    estado ENUM('Activo', 'Suspendido', 'Inhabilitado', 'Retirado') DEFAULT 'Activo',
+    fecha_habilitacion DATE,
+    fecha_inhabilitacion DATE,
+    motivo_inhabilitacion TEXT,
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    FOREIGN KEY (persona_id) REFERENCES personas(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Índices para mejorar rendimiento
+CREATE INDEX idx_personas_documento ON personas(numero_documento);
+CREATE INDEX idx_personas_nombres ON personas(nombres, apellido_paterno);
+CREATE INDEX idx_agremiados_colegiatura ON agremiados(numero_colegiatura);
+CREATE INDEX idx_agremiados_estado ON agremiados(estado);
+CREATE INDEX idx_agremiados_persona ON agremiados(persona_id);
+

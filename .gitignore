@@ -1,0 +1,33 @@
+# Archivos de configuración local
+app/config/config.local.php
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Dependencias
+vendor/
+node_modules/
+
+# Archivos de backup
+*.bak
+*.backup
+
+# Archivos sensibles
+.env
+.env.local

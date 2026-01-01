@@ -1,0 +1,7 @@
+        </div>
+    </div>
+
+    <!-- JS de Tabler -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta19/dist/js/tabler.min.js"></script>
+</body>
+</html>

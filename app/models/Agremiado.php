@@ -90,19 +90,21 @@ class Agremiado {
     // Crear agremiado
     public function create($data) {
         $query = "INSERT INTO " . $this->table . "
-                  (persona_id, numero_colegiatura, fecha_colegiatura, universidad,
-                   especialidad, anio_graduacion, estado, fecha_habilitacion,
-                   observaciones, created_by)
+                  (persona_id, numero_colegiatura, fecha_colegiatura, tipo_incorporacion,
+                   fecha_traslado, universidad, especialidad, anio_graduacion, estado,
+                   fecha_habilitacion, observaciones, created_by)
                   VALUES
-                  (:persona_id, :numero_colegiatura, :fecha_colegiatura, :universidad,
-                   :especialidad, :anio_graduacion, :estado, :fecha_habilitacion,
-                   :observaciones, :created_by)";
+                  (:persona_id, :numero_colegiatura, :fecha_colegiatura, :tipo_incorporacion,
+                   :fecha_traslado, :universidad, :especialidad, :anio_graduacion, :estado,
+                   :fecha_habilitacion, :observaciones, :created_by)";
 
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':persona_id', $data['persona_id']);
         $stmt->bindParam(':numero_colegiatura', $data['numero_colegiatura']);
         $stmt->bindParam(':fecha_colegiatura', $data['fecha_colegiatura']);
+        $stmt->bindParam(':tipo_incorporacion', $data['tipo_incorporacion']);
+        $stmt->bindParam(':fecha_traslado', $data['fecha_traslado']);
         $stmt->bindParam(':universidad', $data['universidad']);
         $stmt->bindParam(':especialidad', $data['especialidad']);
         $stmt->bindParam(':anio_graduacion', $data['anio_graduacion']);

@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS agremiados (
     persona_id INT NOT NULL,
     numero_colegiatura VARCHAR(20) NOT NULL UNIQUE,
     fecha_colegiatura DATE NOT NULL,
+    tipo_incorporacion ENUM('Normal', 'Traslado', 'Incorporación') DEFAULT 'Normal',
+    fecha_traslado DATE,
     universidad VARCHAR(200),
     especialidad VARCHAR(200),
     anio_graduacion INT,

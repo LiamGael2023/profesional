@@ -76,6 +76,8 @@ class AgremiadoController {
             'persona_id' => $_POST['persona_id'],
             'numero_colegiatura' => trim($_POST['numero_colegiatura']),
             'fecha_colegiatura' => $_POST['fecha_colegiatura'],
+            'tipo_incorporacion' => $_POST['tipo_incorporacion'] ?? 'Normal',
+            'fecha_traslado' => !empty($_POST['fecha_traslado']) ? $_POST['fecha_traslado'] : null,
             'universidad' => trim($_POST['universidad'] ?? ''),
             'especialidad' => trim($_POST['especialidad'] ?? ''),
             'anio_graduacion' => $_POST['anio_graduacion'] ?? null,

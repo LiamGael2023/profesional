@@ -23,6 +23,21 @@ require_once APP_PATH . '/views/layouts/header.php';
                                 <div class="mb-3">
                                     <label class="form-label">Fecha de Colegiatura *</label>
                                     <input type="date" name="fecha_colegiatura" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
+                                    <small class="form-hint">Fecha de registro en el colegio profesional</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de Incorporación *</label>
+                                    <select name="tipo_incorporacion" id="tipo_incorporacion" class="form-select" required>
+                                        <option value="Normal">Normal</option>
+                                        <option value="Traslado">Traslado</option>
+                                        <option value="Incorporación">Incorporación</option>
+                                    </select>
+                                    <small class="form-hint">Seleccione Traslado o Incorporación si viene de otro colegio</small>
+                                </div>
+                                <div class="mb-3" id="campo_fecha_traslado" style="display: none;">
+                                    <label class="form-label">Fecha de Traslado/Incorporación *</label>
+                                    <input type="date" name="fecha_traslado" id="fecha_traslado" class="form-control">
+                                    <small class="form-hint">Fecha desde cuando se está trasladando o incorporando</small>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Universidad</label>
@@ -60,4 +75,41 @@ require_once APP_PATH . '/views/layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+// Función para mostrar/ocultar campo de fecha de traslado
+function toggleFechaTraslado() {
+    const tipoIncorporacion = document.getElementById('tipo_incorporacion');
+    const campoFechaTraslado = document.getElementById('campo_fecha_traslado');
+    const inputFechaTraslado = document.getElementById('fecha_traslado');
+
+    if (!tipoIncorporacion || !campoFechaTraslado || !inputFechaTraslado) {
+        return;
+    }
+
+    if (tipoIncorporacion.value === 'Traslado' || tipoIncorporacion.value === 'Incorporación') {
+        // Mostrar campo y hacerlo requerido
+        campoFechaTraslado.style.display = 'block';
+        inputFechaTraslado.required = true;
+    } else {
+        // Ocultar campo y quitar requerido
+        campoFechaTraslado.style.display = 'none';
+        inputFechaTraslado.required = false;
+        inputFechaTraslado.value = '';
+    }
+}
+
+// Asegurar que el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', function() {
+    // Ejecutar al cargar la página
+    toggleFechaTraslado();
+
+    // Ejecutar al cambiar el tipo de incorporación
+    const tipoIncorporacion = document.getElementById('tipo_incorporacion');
+    if (tipoIncorporacion) {
+        tipoIncorporacion.addEventListener('change', toggleFechaTraslado);
+    }
+});
+</script>
+
 <?php require_once APP_PATH . '/views/layouts/footer.php'; ?>

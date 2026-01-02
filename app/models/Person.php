@@ -10,14 +10,15 @@ class Person {
     // Obtener todas las personas
     public function getAll($filters = []) {
         $query = "SELECT * FROM " . $this->table . " WHERE 1=1";
+        $params = [];
 
         // Filtros opcionales
         if (!empty($filters['search'])) {
-            $query .= " AND (numero_documento LIKE :search
-                        OR nombres LIKE :search
-                        OR apellido_paterno LIKE :search
-                        OR apellido_materno LIKE :search
-                        OR email LIKE :search)";
+            $query .= " AND (numero_documento LIKE :search1
+                        OR nombres LIKE :search2
+                        OR apellido_paterno LIKE :search3
+                        OR apellido_materno LIKE :search4
+                        OR email LIKE :search5)";
         }
 
         if (isset($filters['is_active'])) {
@@ -30,11 +31,15 @@ class Person {
 
         if (!empty($filters['search'])) {
             $searchTerm = '%' . $filters['search'] . '%';
-            $stmt->bindParam(':search', $searchTerm);
+            $stmt->bindValue(':search1', $searchTerm);
+            $stmt->bindValue(':search2', $searchTerm);
+            $stmt->bindValue(':search3', $searchTerm);
+            $stmt->bindValue(':search4', $searchTerm);
+            $stmt->bindValue(':search5', $searchTerm);
         }
 
         if (isset($filters['is_active'])) {
-            $stmt->bindParam(':is_active', $filters['is_active']);
+            $stmt->bindValue(':is_active', $filters['is_active']);
         }
 
         $stmt->execute();

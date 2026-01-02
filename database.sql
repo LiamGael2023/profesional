@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS personas (
     telefono VARCHAR(20),
     celular VARCHAR(20),
     direccion TEXT,
+    urbanizacion VARCHAR(100),
     distrito VARCHAR(100),
     provincia VARCHAR(100),
     departamento VARCHAR(100),

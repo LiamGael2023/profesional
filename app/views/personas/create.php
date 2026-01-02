@@ -137,21 +137,30 @@ require_once APP_PATH . '/views/layouts/header.php';
                                            class="form-control">
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Urbanización</label>
+                                        <input type="text"
+                                               name="urbanizacion"
+                                               id="urbanizacion"
+                                               class="form-control">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
                                         <label class="form-label">Distrito</label>
                                         <input type="text"
                                                name="distrito"
                                                id="distrito"
                                                class="form-control">
                                     </div>
-                                    <div class="col-md-4 mb-3">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
                                         <label class="form-label">Provincia</label>
                                         <input type="text"
                                                name="provincia"
                                                id="provincia"
                                                class="form-control">
                                     </div>
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-md-6 mb-3">
                                         <label class="form-label">Departamento</label>
                                         <input type="text"
                                                name="departamento"
@@ -401,11 +410,45 @@ function toggleCamposPorTipoDocumento() {
     }
 }
 
+// Función para limpiar todos los campos del formulario
+function limpiarTodosLosCampos() {
+    // Campos de identificación
+    document.getElementById('numero_documento').value = '';
+
+    // Campos de persona natural
+    document.getElementById('apellido_paterno').value = '';
+    document.getElementById('apellido_materno').value = '';
+    document.getElementById('nombres').value = '';
+
+    // Campo de razón social
+    document.getElementById('razon_social').value = '';
+
+    // Campos personales
+    document.getElementById('fecha_nacimiento').value = '';
+
+    // Campos de contacto
+    document.getElementById('email').value = '';
+    document.getElementById('telefono').value = '';
+    document.getElementById('celular').value = '';
+
+    // Campos de dirección
+    document.getElementById('direccion').value = '';
+    document.getElementById('urbanizacion').value = '';
+    document.getElementById('distrito').value = '';
+    document.getElementById('provincia').value = '';
+    document.getElementById('departamento').value = '';
+}
+
 // Ejecutar al cargar la página
 toggleCamposPorTipoDocumento();
 
 // Ejecutar al cambiar el tipo de documento
-document.getElementById('tipo_documento').addEventListener('change', toggleCamposPorTipoDocumento);
+document.getElementById('tipo_documento').addEventListener('change', function() {
+    // Limpiar todos los campos cuando cambia el tipo de documento
+    limpiarTodosLosCampos();
+    // Mostrar/ocultar campos según el tipo
+    toggleCamposPorTipoDocumento();
+});
 </script>
 
 <?php require_once APP_PATH . '/views/layouts/footer.php'; ?>

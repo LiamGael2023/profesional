@@ -234,6 +234,7 @@ class PersonController {
             'telefono' => trim($post['telefono'] ?? ''),
             'celular' => trim($post['celular'] ?? ''),
             'direccion' => trim($post['direccion'] ?? ''),
+            'urbanizacion' => trim($post['urbanizacion'] ?? ''),
             'distrito' => trim($post['distrito'] ?? ''),
             'provincia' => trim($post['provincia'] ?? ''),
             'departamento' => trim($post['departamento'] ?? ''),

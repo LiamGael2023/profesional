@@ -194,7 +194,7 @@ async function buscarDNI() {
     btnBuscar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Buscando...';
 
     try {
-        const response = await fetch(`https://api.apis.net.pe/v1/dni?numero=${numeroDocumento}`);
+        const response = await fetch(`<?php echo APP_URL; ?>/api/consulta-dni.php?dni=${numeroDocumento}`);
 
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);

@@ -190,10 +190,15 @@ class PersonController {
         }
 
         if (empty($data['nombres'])) {
-            $errors[] = 'Los nombres son obligatorios';
+            if ($data['tipo_documento'] === 'RUC') {
+                $errors[] = 'La razón social es obligatoria';
+            } else {
+                $errors[] = 'Los nombres son obligatorios';
+            }
         }
 
-        if (empty($data['apellido_paterno'])) {
+        // Solo validar apellido paterno para personas naturales (no RUC)
+        if ($data['tipo_documento'] !== 'RUC' && empty($data['apellido_paterno'])) {
             $errors[] = 'El apellido paterno es obligatorio';
         }
 
@@ -201,12 +206,26 @@ class PersonController {
     }
 
     private function preparePersonData($post) {
+        $tipoDocumento = $post['tipo_documento'] ?? 'DNI';
+
+        // Si es RUC, usar razon_social para nombres y dejar apellidos vacíos
+        if ($tipoDocumento === 'RUC') {
+            $nombres = trim($post['razon_social'] ?? '');
+            $apellidoPaterno = ''; // RUC no tiene apellidos
+            $apellidoMaterno = '';
+        } else {
+            // Para DNI, CE, Pasaporte usar nombres y apellidos normales
+            $nombres = trim($post['nombres'] ?? '');
+            $apellidoPaterno = trim($post['apellido_paterno'] ?? '');
+            $apellidoMaterno = trim($post['apellido_materno'] ?? '');
+        }
+
         return [
-            'tipo_documento' => $post['tipo_documento'] ?? 'DNI',
+            'tipo_documento' => $tipoDocumento,
             'numero_documento' => trim($post['numero_documento']),
-            'nombres' => trim($post['nombres']),
-            'apellido_paterno' => trim($post['apellido_paterno']),
-            'apellido_materno' => trim($post['apellido_materno'] ?? ''),
+            'nombres' => $nombres,
+            'apellido_paterno' => $apellidoPaterno,
+            'apellido_materno' => $apellidoMaterno,
             'fecha_nacimiento' => $post['fecha_nacimiento'] ?? null,
             'genero' => $post['genero'] ?? 'Masculino',
             'estado_civil' => $post['estado_civil'] ?? 'Soltero',

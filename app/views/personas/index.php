@@ -57,7 +57,16 @@ require_once APP_PATH . '/views/layouts/header.php';
                             <?php foreach ($personas as $p): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($p['numero_documento']); ?></td>
-                                <td><?php echo htmlspecialchars($p['apellido_paterno'] . ' ' . $p['apellido_materno'] . ', ' . $p['nombres']); ?></td>
+                                <td>
+                                    <?php
+                                    // Si es RUC, mostrar solo razón social (nombres), si es persona mostrar apellidos y nombres
+                                    if ($p['tipo_documento'] === 'RUC') {
+                                        echo htmlspecialchars($p['nombres']);
+                                    } else {
+                                        echo htmlspecialchars($p['apellido_paterno'] . ' ' . $p['apellido_materno'] . ', ' . $p['nombres']);
+                                    }
+                                    ?>
+                                </td>
                                 <td><?php echo htmlspecialchars($p['email']); ?></td>
                                 <td><?php echo htmlspecialchars($p['celular']); ?></td>
                                 <td><span class="badge bg-success">Activo</span></td>

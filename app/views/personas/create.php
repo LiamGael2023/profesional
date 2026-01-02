@@ -51,30 +51,42 @@ require_once APP_PATH . '/views/layouts/header.php';
                                         <small class="form-hint">Para DNI: ingrese 8 dígitos. Para RUC: ingrese 11 dígitos. Luego presione Buscar</small>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Apellido Paterno *</label>
-                                        <input type="text"
-                                               name="apellido_paterno"
-                                               id="apellido_paterno"
-                                               class="form-control"
-                                               required>
+
+                                <!-- Campos para RUC (Razón Social) -->
+                                <div class="mb-3" id="campo_razon_social" style="display: none;">
+                                    <label class="form-label">Razón Social *</label>
+                                    <input type="text"
+                                           name="razon_social"
+                                           id="razon_social"
+                                           class="form-control"
+                                           placeholder="Nombre o razón social de la empresa">
+                                </div>
+
+                                <!-- Campos para Persona Natural (DNI, CE, Pasaporte) -->
+                                <div id="campos_persona_natural">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Apellido Paterno *</label>
+                                            <input type="text"
+                                                   name="apellido_paterno"
+                                                   id="apellido_paterno"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Apellido Materno</label>
+                                            <input type="text"
+                                                   name="apellido_materno"
+                                                   id="apellido_materno"
+                                                   class="form-control">
+                                        </div>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Apellido Materno</label>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombres *</label>
                                         <input type="text"
-                                               name="apellido_materno"
-                                               id="apellido_materno"
+                                               name="nombres"
+                                               id="nombres"
                                                class="form-control">
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Nombres *</label>
-                                    <input type="text"
-                                           name="nombres"
-                                           id="nombres"
-                                           class="form-control"
-                                           required>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
@@ -230,30 +242,19 @@ async function buscarDNI() {
         // La API puede devolver el DNI tanto en 'numeroDocumento' como en 'dni'
         if (data && (data.numeroDocumento || data.dni) && (data.nombres || data.nombre)) {
             // Rellenar los campos (soportar múltiples formatos de respuesta)
-            let nombres = data.nombres || data.nombre || '';
-            let apellidoPaterno = data.apellidoPaterno || data.apellido_paterno || '';
-            let apellidoMaterno = data.apellidoMaterno || data.apellido_materno || '';
+            const nombres = data.nombres || data.nombre || '';
+            const apellidoPaterno = data.apellidoPaterno || data.apellido_paterno || '';
+            const apellidoMaterno = data.apellidoMaterno || data.apellido_materno || '';
 
-            // Para RUC, el nombre viene completo en un solo campo
-            // Intentar separar apellidos y nombres si es posible
-            if (tipoDocumento === 'RUC' && !apellidoPaterno && nombres) {
-                const palabras = nombres.trim().split(' ');
-                if (palabras.length >= 3) {
-                    // Asumir: primer palabra = apellido paterno, segunda = apellido materno, resto = nombres
-                    apellidoPaterno = palabras[0];
-                    apellidoMaterno = palabras[1];
-                    nombres = palabras.slice(2).join(' ');
-                } else if (palabras.length === 2) {
-                    // Solo dos palabras: primera = apellido, segunda = nombre
-                    apellidoPaterno = palabras[0];
-                    nombres = palabras[1];
-                }
-                // Si es una sola palabra o es razón social, se queda todo en nombres
+            if (tipoDocumento === 'RUC') {
+                // Para RUC, llenar directamente la razón social
+                document.getElementById('razon_social').value = nombres;
+            } else {
+                // Para DNI y otros, llenar apellidos y nombres
+                document.getElementById('apellido_paterno').value = apellidoPaterno;
+                document.getElementById('apellido_materno').value = apellidoMaterno;
+                document.getElementById('nombres').value = nombres;
             }
-
-            document.getElementById('apellido_paterno').value = apellidoPaterno;
-            document.getElementById('apellido_materno').value = apellidoMaterno;
-            document.getElementById('nombres').value = nombres;
 
             // Rellenar dirección si está disponible
             if (data.direccion) {
@@ -270,19 +271,29 @@ async function buscarDNI() {
             }
 
             // Mostrar éxito
-            const nombreCompleto = apellidoPaterno + ' ' + apellidoMaterno + ' ' + nombres;
+            let infoHTML = `
+                <div class="text-start">
+                    <p><strong>${tipoDocumento}:</strong> ${numeroDocumento}</p>
+            `;
+
+            if (tipoDocumento === 'RUC') {
+                infoHTML += `<p><strong>Razón Social:</strong> ${nombres}</p>`;
+                if (data.estado) infoHTML += `<p><strong>Estado:</strong> ${data.estado}</p>`;
+                if (data.condicion) infoHTML += `<p><strong>Condición:</strong> ${data.condicion}</p>`;
+            } else {
+                const nombreCompleto = apellidoPaterno + ' ' + apellidoMaterno + ' ' + nombres;
+                infoHTML += `<p><strong>Nombre Completo:</strong> ${nombreCompleto.trim()}</p>`;
+            }
+
+            infoHTML += `
+                    <p class="text-muted mb-0">Los datos han sido rellenados automáticamente</p>
+                </div>
+            `;
+
             Swal.fire({
                 icon: 'success',
                 title: '¡Encontrado!',
-                html: `
-                    <div class="text-start">
-                        <p><strong>${tipoDocumento}:</strong> ${numeroDocumento}</p>
-                        <p><strong>Nombre Completo:</strong> ${nombreCompleto.trim()}</p>
-                        ${data.estado ? `<p><strong>Estado:</strong> ${data.estado}</p>` : ''}
-                        ${data.condicion ? `<p><strong>Condición:</strong> ${data.condicion}</p>` : ''}
-                        <p class="text-muted mb-0">Los datos han sido rellenados automáticamente</p>
-                    </div>
-                `,
+                html: infoHTML,
                 confirmButtonText: 'Continuar'
             });
         } else {
@@ -341,13 +352,60 @@ document.getElementById('numero_documento').addEventListener('keypress', functio
     }
 });
 
-// Validar que solo se ingresen números en DNI
+// Validar que solo se ingresen números en DNI y RUC
 document.getElementById('numero_documento').addEventListener('input', function(e) {
     const tipoDocumento = document.getElementById('tipo_documento').value;
     if (tipoDocumento === 'DNI') {
         this.value = this.value.replace(/\D/g, '').substring(0, 8);
+    } else if (tipoDocumento === 'RUC') {
+        this.value = this.value.replace(/\D/g, '').substring(0, 11);
     }
 });
+
+// Función para mostrar/ocultar campos según tipo de documento
+function toggleCamposPorTipoDocumento() {
+    const tipoDocumento = document.getElementById('tipo_documento').value;
+    const campoRazonSocial = document.getElementById('campo_razon_social');
+    const camposPersonaNatural = document.getElementById('campos_persona_natural');
+
+    const inputRazonSocial = document.getElementById('razon_social');
+    const inputApellidoPaterno = document.getElementById('apellido_paterno');
+    const inputNombres = document.getElementById('nombres');
+
+    if (tipoDocumento === 'RUC') {
+        // Mostrar campo de Razón Social
+        campoRazonSocial.style.display = 'block';
+        camposPersonaNatural.style.display = 'none';
+
+        // Ajustar validación required
+        inputRazonSocial.required = true;
+        inputApellidoPaterno.required = false;
+        inputNombres.required = false;
+
+        // Limpiar campos de persona natural
+        inputApellidoPaterno.value = '';
+        document.getElementById('apellido_materno').value = '';
+        inputNombres.value = '';
+    } else {
+        // Mostrar campos de Persona Natural
+        campoRazonSocial.style.display = 'none';
+        camposPersonaNatural.style.display = 'block';
+
+        // Ajustar validación required
+        inputRazonSocial.required = false;
+        inputApellidoPaterno.required = true;
+        inputNombres.required = true;
+
+        // Limpiar campo de razón social
+        inputRazonSocial.value = '';
+    }
+}
+
+// Ejecutar al cargar la página
+toggleCamposPorTipoDocumento();
+
+// Ejecutar al cambiar el tipo de documento
+document.getElementById('tipo_documento').addEventListener('change', toggleCamposPorTipoDocumento);
 </script>
 
 <?php require_once APP_PATH . '/views/layouts/footer.php'; ?>

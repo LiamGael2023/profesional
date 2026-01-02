@@ -196,18 +196,34 @@ async function buscarDNI() {
     try {
         const response = await fetch(`https://api.apis.net.pe/v1/dni?numero=${numeroDocumento}`);
 
-        if (!response.ok) {
-            throw new Error('No se pudo conectar con el servicio');
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        // Leer el texto de la respuesta primero
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        // Intentar parsear como JSON
+        let data;
+        try {
+            data = JSON.parse(responseText);
+            console.log('Parsed data:', data);
+        } catch (parseError) {
+            console.error('Error al parsear JSON:', parseError);
+            throw new Error('Respuesta inválida del servidor');
         }
 
-        const data = await response.json();
-
         // Verificar si se encontraron datos
-        if (data && data.numeroDocumento) {
-            // Rellenar los campos
-            document.getElementById('apellido_paterno').value = data.apellidoPaterno || '';
-            document.getElementById('apellido_materno').value = data.apellidoMaterno || '';
-            document.getElementById('nombres').value = data.nombres || '';
+        // La API puede devolver el DNI tanto en 'numeroDocumento' como en 'dni'
+        if (data && (data.numeroDocumento || data.dni) && (data.nombres || data.nombre)) {
+            // Rellenar los campos (soportar múltiples formatos de respuesta)
+            const nombres = data.nombres || data.nombre || '';
+            const apellidoPaterno = data.apellidoPaterno || data.apellido_paterno || '';
+            const apellidoMaterno = data.apellidoMaterno || data.apellido_materno || '';
+
+            document.getElementById('apellido_paterno').value = apellidoPaterno;
+            document.getElementById('apellido_materno').value = apellidoMaterno;
+            document.getElementById('nombres').value = nombres;
 
             // Rellenar dirección si está disponible
             if (data.direccion) {
@@ -229,15 +245,16 @@ async function buscarDNI() {
                 title: '¡Encontrado!',
                 html: `
                     <div class="text-start">
-                        <p><strong>Nombre:</strong> ${data.nombres}</p>
-                        <p><strong>Apellidos:</strong> ${data.apellidoPaterno} ${data.apellidoMaterno}</p>
+                        <p><strong>Nombre:</strong> ${nombres}</p>
+                        <p><strong>Apellidos:</strong> ${apellidoPaterno} ${apellidoMaterno}</p>
                         <p class="text-muted mb-0">Los datos han sido rellenados automáticamente</p>
                     </div>
                 `,
                 confirmButtonText: 'Continuar'
             });
         } else {
-            // No se encontró
+            // No se encontró o respuesta vacía
+            console.warn('DNI no encontrado o respuesta vacía:', data);
             Swal.fire({
                 icon: 'warning',
                 title: 'DNI No Encontrado',
@@ -256,13 +273,14 @@ async function buscarDNI() {
             });
         }
     } catch (error) {
-        console.error('Error al buscar DNI:', error);
+        console.error('Error completo al buscar DNI:', error);
 
         Swal.fire({
             icon: 'error',
             title: 'Error de Conexión',
             html: `
                 <p>No se pudo conectar con el servicio de consulta de DNI</p>
+                <p class="text-muted small">Error: ${error.message}</p>
                 <p class="text-muted">Puede continuar y registrar los datos manualmente</p>
             `,
             confirmButtonText: 'Registrar Manualmente',

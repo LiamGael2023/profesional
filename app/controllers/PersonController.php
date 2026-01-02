@@ -52,7 +52,7 @@ class PersonController {
             exit();
         }
 
-        $data = $this->preparePerson Data($_POST);
+        $data = $this->preparePersonData($_POST);
         $data['created_by'] = $_SESSION['user_id'];
 
         // Subir foto si existe

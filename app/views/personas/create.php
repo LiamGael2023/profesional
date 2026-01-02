@@ -353,24 +353,6 @@ async function buscarDNI() {
     }
 }
 
-// Permitir buscar con Enter en el campo de documento
-document.getElementById('numero_documento').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        buscarDNI();
-    }
-});
-
-// Validar que solo se ingresen números en DNI y RUC
-document.getElementById('numero_documento').addEventListener('input', function(e) {
-    const tipoDocumento = document.getElementById('tipo_documento').value;
-    if (tipoDocumento === 'DNI') {
-        this.value = this.value.replace(/\D/g, '').substring(0, 8);
-    } else if (tipoDocumento === 'RUC') {
-        this.value = this.value.replace(/\D/g, '').substring(0, 11);
-    }
-});
-
 // Función para mostrar/ocultar campos según tipo de documento
 function toggleCamposPorTipoDocumento() {
     const tipoDocumento = document.getElementById('tipo_documento').value;
@@ -381,7 +363,10 @@ function toggleCamposPorTipoDocumento() {
     const inputApellidoPaterno = document.getElementById('apellido_paterno');
     const inputNombres = document.getElementById('nombres');
 
+    console.log('Toggle ejecutado. Tipo documento:', tipoDocumento);
+
     if (tipoDocumento === 'RUC') {
+        console.log('Mostrando campos RUC');
         // Mostrar campo de Razón Social
         campoRazonSocial.style.display = 'block';
         camposPersonaNatural.style.display = 'none';
@@ -391,6 +376,7 @@ function toggleCamposPorTipoDocumento() {
         inputApellidoPaterno.required = false;
         inputNombres.required = false;
     } else {
+        console.log('Mostrando campos Persona Natural');
         // Mostrar campos de Persona Natural
         campoRazonSocial.style.display = 'none';
         camposPersonaNatural.style.display = 'block';
@@ -431,15 +417,36 @@ function limpiarTodosLosCampos() {
     document.getElementById('departamento').value = '';
 }
 
-// Ejecutar al cargar la página
-toggleCamposPorTipoDocumento();
-
-// Ejecutar al cambiar el tipo de documento
-document.getElementById('tipo_documento').addEventListener('change', function() {
-    // Limpiar todos los campos cuando cambia el tipo de documento
-    limpiarTodosLosCampos();
-    // Mostrar/ocultar campos según el tipo
+// Asegurar que el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', function() {
+    // Ejecutar al cargar la página
     toggleCamposPorTipoDocumento();
+
+    // Ejecutar al cambiar el tipo de documento
+    document.getElementById('tipo_documento').addEventListener('change', function() {
+        // Limpiar todos los campos cuando cambia el tipo de documento
+        limpiarTodosLosCampos();
+        // Mostrar/ocultar campos según el tipo
+        toggleCamposPorTipoDocumento();
+    });
+
+    // Permitir buscar con Enter en el campo de documento
+    document.getElementById('numero_documento').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarDNI();
+        }
+    });
+
+    // Validar que solo se ingresen números en DNI y RUC
+    document.getElementById('numero_documento').addEventListener('input', function(e) {
+        const tipoDocumento = document.getElementById('tipo_documento').value;
+        if (tipoDocumento === 'DNI') {
+            this.value = this.value.replace(/\D/g, '').substring(0, 8);
+        } else if (tipoDocumento === 'RUC') {
+            this.value = this.value.replace(/\D/g, '').substring(0, 11);
+        }
+    });
 });
 </script>
 

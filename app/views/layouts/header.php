@@ -5,6 +5,19 @@ $headerBgColor = getHeaderBgColor();
 $headerTextColor = getHeaderTextColor();
 $logoDesktop = getLogoUrl('desktop');
 $logoMobile = getLogoUrl('mobile');
+
+// Detectar página activa
+$currentPage = '';
+$requestUri = $_SERVER['REQUEST_URI'];
+if (strpos($requestUri, '/personas') !== false) {
+    $currentPage = 'personas';
+} elseif (strpos($requestUri, '/agremiados') !== false) {
+    $currentPage = 'agremiados';
+} elseif (strpos($requestUri, '/settings') !== false) {
+    $currentPage = 'settings';
+} elseif (strpos($requestUri, '/dashboard') !== false) {
+    $currentPage = 'dashboard';
+}
 ?>
 <!doctype html>
 <html lang="es">
@@ -135,7 +148,7 @@ $logoMobile = getLogoUrl('mobile');
                 <div class="collapse navbar-collapse" id="navbar-menu">
                     <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
                         <ul class="navbar-nav">
-                            <li class="nav-item active">
+                            <li class="nav-item <?php echo ($currentPage == 'dashboard') ? 'active' : ''; ?>">
                                 <a class="nav-link" href="<?php echo APP_URL; ?>/dashboard">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <i class="ti ti-home"></i>
@@ -145,7 +158,7 @@ $logoMobile = getLogoUrl('mobile');
                                     </span>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item <?php echo ($currentPage == 'personas') ? 'active' : ''; ?>">
                                 <a class="nav-link" href="<?php echo APP_URL; ?>/personas">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <i class="ti ti-users"></i>
@@ -155,7 +168,7 @@ $logoMobile = getLogoUrl('mobile');
                                     </span>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item <?php echo ($currentPage == 'agremiados') ? 'active' : ''; ?>">
                                 <a class="nav-link" href="<?php echo APP_URL; ?>/agremiados">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <i class="ti ti-id-badge-2"></i>

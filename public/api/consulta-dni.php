@@ -1,6 +1,6 @@
 <?php
 /**
- * API Proxy para consulta de DNI
+ * API Proxy para consulta de DNI y RUC
  * Evita problemas de CORS haciendo la petición desde el servidor
  */
 
@@ -13,18 +13,42 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// Obtener el número de DNI
-$dni = $_GET['dni'] ?? '';
+// Obtener el número de documento y tipo
+$numero = $_GET['numero'] ?? $_GET['dni'] ?? ''; // Soportar ambos parámetros por compatibilidad
+$tipo = $_GET['tipo'] ?? '';
 
-// Validar DNI
-if (empty($dni) || !preg_match('/^\d{8}$/', $dni)) {
+// Validar número de documento
+if (empty($numero)) {
     http_response_code(400);
-    echo json_encode(['error' => 'DNI inválido. Debe tener 8 dígitos']);
+    echo json_encode(['error' => 'Número de documento requerido']);
     exit;
 }
 
-// URL de la API
-$apiUrl = "https://api.apis.net.pe/v1/dni?numero=" . $dni;
+// Determinar tipo si no se especificó (por longitud)
+if (empty($tipo)) {
+    $tipo = strlen($numero) === 8 ? 'DNI' : (strlen($numero) === 11 ? 'RUC' : '');
+}
+
+// Validar según el tipo
+if ($tipo === 'DNI') {
+    if (!preg_match('/^\d{8}$/', $numero)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'DNI inválido. Debe tener 8 dígitos']);
+        exit;
+    }
+    $apiUrl = "https://api.apis.net.pe/v1/dni?numero=" . $numero;
+} elseif ($tipo === 'RUC') {
+    if (!preg_match('/^\d{11}$/', $numero)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'RUC inválido. Debe tener 11 dígitos']);
+        exit;
+    }
+    $apiUrl = "https://api.apis.net.pe/v1/ruc?numero=" . $numero;
+} else {
+    http_response_code(400);
+    echo json_encode(['error' => 'Tipo de documento no válido']);
+    exit;
+}
 
 // Inicializar cURL
 $ch = curl_init();

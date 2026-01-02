@@ -26,6 +26,7 @@ require_once APP_PATH . '/views/layouts/header.php';
                                         <label class="form-label">Tipo Documento</label>
                                         <select name="tipo_documento" id="tipo_documento" class="form-select" required>
                                             <option value="DNI">DNI</option>
+                                            <option value="RUC">RUC</option>
                                             <option value="CE">CE</option>
                                             <option value="Pasaporte">Pasaporte</option>
                                         </select>
@@ -47,7 +48,7 @@ require_once APP_PATH . '/views/layouts/header.php';
                                                 <i class="ti ti-search"></i> Buscar
                                             </button>
                                         </div>
-                                        <small class="form-hint">Para DNI: ingrese 8 dígitos y presione Buscar</small>
+                                        <small class="form-hint">Para DNI: ingrese 8 dígitos. Para RUC: ingrese 11 dígitos. Luego presione Buscar</small>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -167,26 +168,38 @@ async function buscarDNI() {
     const numeroDocumento = document.getElementById('numero_documento').value;
     const btnBuscar = document.getElementById('btnBuscarDNI');
 
-    // Validar que sea DNI
-    if (tipoDocumento !== 'DNI') {
+    // Validar que sea DNI o RUC
+    if (tipoDocumento !== 'DNI' && tipoDocumento !== 'RUC') {
         Swal.fire({
             icon: 'info',
             title: 'Información',
-            text: 'La búsqueda automática solo está disponible para DNI peruano',
+            text: 'La búsqueda automática solo está disponible para DNI y RUC peruano',
             confirmButtonText: 'Entendido'
         });
         return;
     }
 
-    // Validar que tenga 8 dígitos
-    if (numeroDocumento.length !== 8 || !/^\d+$/.test(numeroDocumento)) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'DNI Inválido',
-            text: 'El DNI debe tener exactamente 8 dígitos',
-            confirmButtonText: 'OK'
-        });
-        return;
+    // Validar según el tipo de documento
+    if (tipoDocumento === 'DNI') {
+        if (numeroDocumento.length !== 8 || !/^\d+$/.test(numeroDocumento)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'DNI Inválido',
+                text: 'El DNI debe tener exactamente 8 dígitos',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+    } else if (tipoDocumento === 'RUC') {
+        if (numeroDocumento.length !== 11 || !/^\d+$/.test(numeroDocumento)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'RUC Inválido',
+                text: 'El RUC debe tener exactamente 11 dígitos',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
     }
 
     // Mostrar loading
@@ -194,7 +207,7 @@ async function buscarDNI() {
     btnBuscar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Buscando...';
 
     try {
-        const response = await fetch(`<?php echo APP_URL; ?>/api/consulta-dni.php?dni=${numeroDocumento}`);
+        const response = await fetch(`<?php echo APP_URL; ?>/api/consulta-dni.php?numero=${numeroDocumento}&tipo=${tipoDocumento}`);
 
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);
@@ -217,9 +230,26 @@ async function buscarDNI() {
         // La API puede devolver el DNI tanto en 'numeroDocumento' como en 'dni'
         if (data && (data.numeroDocumento || data.dni) && (data.nombres || data.nombre)) {
             // Rellenar los campos (soportar múltiples formatos de respuesta)
-            const nombres = data.nombres || data.nombre || '';
-            const apellidoPaterno = data.apellidoPaterno || data.apellido_paterno || '';
-            const apellidoMaterno = data.apellidoMaterno || data.apellido_materno || '';
+            let nombres = data.nombres || data.nombre || '';
+            let apellidoPaterno = data.apellidoPaterno || data.apellido_paterno || '';
+            let apellidoMaterno = data.apellidoMaterno || data.apellido_materno || '';
+
+            // Para RUC, el nombre viene completo en un solo campo
+            // Intentar separar apellidos y nombres si es posible
+            if (tipoDocumento === 'RUC' && !apellidoPaterno && nombres) {
+                const palabras = nombres.trim().split(' ');
+                if (palabras.length >= 3) {
+                    // Asumir: primer palabra = apellido paterno, segunda = apellido materno, resto = nombres
+                    apellidoPaterno = palabras[0];
+                    apellidoMaterno = palabras[1];
+                    nombres = palabras.slice(2).join(' ');
+                } else if (palabras.length === 2) {
+                    // Solo dos palabras: primera = apellido, segunda = nombre
+                    apellidoPaterno = palabras[0];
+                    nombres = palabras[1];
+                }
+                // Si es una sola palabra o es razón social, se queda todo en nombres
+            }
 
             document.getElementById('apellido_paterno').value = apellidoPaterno;
             document.getElementById('apellido_materno').value = apellidoMaterno;
@@ -240,13 +270,16 @@ async function buscarDNI() {
             }
 
             // Mostrar éxito
+            const nombreCompleto = apellidoPaterno + ' ' + apellidoMaterno + ' ' + nombres;
             Swal.fire({
                 icon: 'success',
                 title: '¡Encontrado!',
                 html: `
                     <div class="text-start">
-                        <p><strong>Nombre:</strong> ${nombres}</p>
-                        <p><strong>Apellidos:</strong> ${apellidoPaterno} ${apellidoMaterno}</p>
+                        <p><strong>${tipoDocumento}:</strong> ${numeroDocumento}</p>
+                        <p><strong>Nombre Completo:</strong> ${nombreCompleto.trim()}</p>
+                        ${data.estado ? `<p><strong>Estado:</strong> ${data.estado}</p>` : ''}
+                        ${data.condicion ? `<p><strong>Condición:</strong> ${data.condicion}</p>` : ''}
                         <p class="text-muted mb-0">Los datos han sido rellenados automáticamente</p>
                     </div>
                 `,
@@ -254,12 +287,12 @@ async function buscarDNI() {
             });
         } else {
             // No se encontró o respuesta vacía
-            console.warn('DNI no encontrado o respuesta vacía:', data);
+            console.warn(`${tipoDocumento} no encontrado o respuesta vacía:`, data);
             Swal.fire({
                 icon: 'warning',
-                title: 'DNI No Encontrado',
+                title: `${tipoDocumento} No Encontrado`,
                 html: `
-                    <p>No se encontraron datos para el DNI <strong>${numeroDocumento}</strong></p>
+                    <p>No se encontraron datos para el ${tipoDocumento} <strong>${numeroDocumento}</strong></p>
                     <p class="text-muted">Puede continuar y registrar los datos manualmente</p>
                 `,
                 confirmButtonText: 'Registrar Manualmente',
@@ -273,13 +306,13 @@ async function buscarDNI() {
             });
         }
     } catch (error) {
-        console.error('Error completo al buscar DNI:', error);
+        console.error(`Error completo al buscar ${tipoDocumento}:`, error);
 
         Swal.fire({
             icon: 'error',
             title: 'Error de Conexión',
             html: `
-                <p>No se pudo conectar con el servicio de consulta de DNI</p>
+                <p>No se pudo conectar con el servicio de consulta de ${tipoDocumento}</p>
                 <p class="text-muted small">Error: ${error.message}</p>
                 <p class="text-muted">Puede continuar y registrar los datos manualmente</p>
             `,

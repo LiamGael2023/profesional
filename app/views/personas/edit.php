@@ -169,7 +169,7 @@ require_once APP_PATH . '/views/layouts/header.php';
                                                name="urbanizacion"
                                                id="urbanizacion"
                                                class="form-control"
-                                               value="<?php echo htmlspecialchars($persona['urbanizacion']); ?>">
+                                               value="<?php echo htmlspecialchars($persona['urbanizacion'] ?? ''); ?>">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Distrito</label>

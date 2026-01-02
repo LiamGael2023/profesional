@@ -99,11 +99,11 @@ require_once APP_PATH . '/views/layouts/header.php';
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Urbanización:</label>
-                                    <p><?php echo $persona['urbanizacion'] ? htmlspecialchars($persona['urbanizacion']) : '-'; ?></p>
+                                    <p><?php echo !empty($persona['urbanizacion']) ? htmlspecialchars($persona['urbanizacion']) : '-'; ?></p>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Distrito:</label>
-                                    <p><?php echo $persona['distrito'] ? htmlspecialchars($persona['distrito']) : '-'; ?></p>
+                                    <p><?php echo !empty($persona['distrito']) ? htmlspecialchars($persona['distrito']) : '-'; ?></p>
                                 </div>
                             </div>
                             <div class="row mb-3">

@@ -390,11 +390,6 @@ function toggleCamposPorTipoDocumento() {
         inputRazonSocial.required = true;
         inputApellidoPaterno.required = false;
         inputNombres.required = false;
-
-        // Limpiar campos de persona natural
-        inputApellidoPaterno.value = '';
-        document.getElementById('apellido_materno').value = '';
-        inputNombres.value = '';
     } else {
         // Mostrar campos de Persona Natural
         campoRazonSocial.style.display = 'none';
@@ -404,9 +399,6 @@ function toggleCamposPorTipoDocumento() {
         inputRazonSocial.required = false;
         inputApellidoPaterno.required = true;
         inputNombres.required = true;
-
-        // Limpiar campo de razón social
-        inputRazonSocial.value = '';
     }
 }
 

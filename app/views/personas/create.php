@@ -355,7 +355,7 @@ async function buscarDNI() {
 
 // Función para mostrar/ocultar campos según tipo de documento
 function toggleCamposPorTipoDocumento() {
-    const tipoDocumento = document.getElementById('tipo_documento').value;
+    const tipoDocumento = document.getElementById('tipo_documento');
     const campoRazonSocial = document.getElementById('campo_razon_social');
     const camposPersonaNatural = document.getElementById('campos_persona_natural');
 
@@ -363,9 +363,16 @@ function toggleCamposPorTipoDocumento() {
     const inputApellidoPaterno = document.getElementById('apellido_paterno');
     const inputNombres = document.getElementById('nombres');
 
-    console.log('Toggle ejecutado. Tipo documento:', tipoDocumento);
+    // Verificar que todos los elementos existan
+    if (!tipoDocumento || !campoRazonSocial || !camposPersonaNatural ||
+        !inputRazonSocial || !inputApellidoPaterno || !inputNombres) {
+        console.error('No se encontraron todos los elementos necesarios');
+        return;
+    }
 
-    if (tipoDocumento === 'RUC') {
+    console.log('Toggle ejecutado. Tipo documento:', tipoDocumento.value);
+
+    if (tipoDocumento.value === 'RUC') {
         console.log('Mostrando campos RUC');
         // Mostrar campo de Razón Social
         campoRazonSocial.style.display = 'block';
@@ -390,31 +397,39 @@ function toggleCamposPorTipoDocumento() {
 
 // Función para limpiar todos los campos del formulario
 function limpiarTodosLosCampos() {
+    // Función auxiliar para limpiar campo de forma segura
+    const limpiarCampo = (id) => {
+        const campo = document.getElementById(id);
+        if (campo) {
+            campo.value = '';
+        }
+    };
+
     // Campos de identificación
-    document.getElementById('numero_documento').value = '';
+    limpiarCampo('numero_documento');
 
     // Campos de persona natural
-    document.getElementById('apellido_paterno').value = '';
-    document.getElementById('apellido_materno').value = '';
-    document.getElementById('nombres').value = '';
+    limpiarCampo('apellido_paterno');
+    limpiarCampo('apellido_materno');
+    limpiarCampo('nombres');
 
     // Campo de razón social
-    document.getElementById('razon_social').value = '';
+    limpiarCampo('razon_social');
 
     // Campos personales
-    document.getElementById('fecha_nacimiento').value = '';
+    limpiarCampo('fecha_nacimiento');
 
     // Campos de contacto
-    document.getElementById('email').value = '';
-    document.getElementById('telefono').value = '';
-    document.getElementById('celular').value = '';
+    limpiarCampo('email');
+    limpiarCampo('telefono');
+    limpiarCampo('celular');
 
     // Campos de dirección
-    document.getElementById('direccion').value = '';
-    document.getElementById('urbanizacion').value = '';
-    document.getElementById('distrito').value = '';
-    document.getElementById('provincia').value = '';
-    document.getElementById('departamento').value = '';
+    limpiarCampo('direccion');
+    limpiarCampo('urbanizacion');
+    limpiarCampo('distrito');
+    limpiarCampo('provincia');
+    limpiarCampo('departamento');
 }
 
 // Asegurar que el DOM esté completamente cargado

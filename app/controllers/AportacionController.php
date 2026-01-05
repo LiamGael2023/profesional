@@ -92,6 +92,10 @@ class AportacionController {
         if ($anio) $filters['anio'] = $anio;
         if ($estado) $filters['estado'] = $estado;
 
+        // Filtrar solo aportaciones hasta el mes/año actual
+        $periodo_actual = date('Y-m');
+        $filters['periodo_max'] = $periodo_actual;
+
         $aportaciones = $this->aportacionModel->getAll($filters);
 
         // Marcar aportaciones vencidas
@@ -143,6 +147,93 @@ class AportacionController {
         }
 
         header('Location: ' . APP_URL . '/aportaciones?agremiado_id=' . $agremiado_id);
+        exit();
+    }
+
+    // Procesar pago múltiple
+    public function pagarMultiple() {
+        $this->auth->requireAuth();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . APP_URL . '/aportaciones');
+            exit();
+        }
+
+        $aportaciones_ids = $_POST['aportaciones'] ?? [];
+        $agremiado_id = $_POST['agremiado_id'] ?? null;
+
+        if (empty($aportaciones_ids)) {
+            $_SESSION['error'] = 'No se seleccionaron aportaciones';
+            header('Location: ' . APP_URL . '/aportaciones' . ($agremiado_id ? '?agremiado_id=' . $agremiado_id : ''));
+            exit();
+        }
+
+        // Mostrar formulario de pago para múltiples aportaciones
+        $aportaciones = [];
+        $total = 0;
+        foreach ($aportaciones_ids as $id) {
+            $aportacion = $this->aportacionModel->getById($id);
+            if ($aportacion && ($aportacion['estado'] == 'Pendiente' || $aportacion['estado'] == 'Vencido')) {
+                $aportaciones[] = $aportacion;
+                $total += $aportacion['monto'];
+            }
+        }
+
+        if (empty($aportaciones)) {
+            $_SESSION['error'] = 'No hay aportaciones válidas para pagar';
+            header('Location: ' . APP_URL . '/aportaciones' . ($agremiado_id ? '?agremiado_id=' . $agremiado_id : ''));
+            exit();
+        }
+
+        require_once APP_PATH . '/views/aportaciones/pagar-multiple.php';
+    }
+
+    // Procesar pago múltiple confirmado
+    public function procesarPagoMultiple() {
+        $this->auth->requireAuth();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . APP_URL . '/aportaciones');
+            exit();
+        }
+
+        $aportaciones_ids = $_POST['aportaciones_ids'] ?? [];
+        $agremiado_id = $_POST['agremiado_id'] ?? null;
+
+        if (empty($aportaciones_ids)) {
+            $_SESSION['error'] = 'No se seleccionaron aportaciones';
+            header('Location: ' . APP_URL . '/aportaciones' . ($agremiado_id ? '?agremiado_id=' . $agremiado_id : ''));
+            exit();
+        }
+
+        $data = [
+            'fecha_pago' => $_POST['fecha_pago'] ?? date('Y-m-d'),
+            'metodo_pago' => trim($_POST['metodo_pago'] ?? ''),
+            'numero_operacion' => trim($_POST['numero_operacion'] ?? ''),
+            'observaciones' => trim($_POST['observaciones'] ?? '')
+        ];
+
+        $procesadas = 0;
+        $errores = 0;
+
+        foreach ($aportaciones_ids as $id) {
+            if ($this->aportacionModel->registrarPago($id, $data)) {
+                $procesadas++;
+            } else {
+                $errores++;
+            }
+        }
+
+        if ($procesadas > 0) {
+            $_SESSION['success'] = "Se registraron {$procesadas} pago(s) correctamente";
+            if ($errores > 0) {
+                $_SESSION['success'] .= ". {$errores} aportación(es) no pudieron procesarse.";
+            }
+        } else {
+            $_SESSION['error'] = 'Error al registrar los pagos';
+        }
+
+        header('Location: ' . APP_URL . '/aportaciones' . ($agremiado_id ? '?agremiado_id=' . $agremiado_id : ''));
         exit();
     }
 

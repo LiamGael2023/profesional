@@ -118,6 +118,25 @@ CREATE TABLE IF NOT EXISTS aportaciones (
     UNIQUE KEY unique_periodo (agremiado_id, periodo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla de configuración de montos por períodos
+CREATE TABLE IF NOT EXISTS configuracion_montos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    monto DECIMAL(10,2) NOT NULL,
+    periodo_inicio VARCHAR(7) NOT NULL COMMENT 'Formato YYYY-MM',
+    periodo_fin VARCHAR(7) DEFAULT NULL COMMENT 'Formato YYYY-MM, NULL = vigente hasta nueva configuración',
+    descripcion VARCHAR(255) DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insertar configuración inicial de ejemplo
+INSERT INTO configuracion_montos (monto, periodo_inicio, periodo_fin, descripcion, created_by)
+VALUES (0.00, '2024-01', NULL, 'Monto inicial por defecto', 1)
+ON DUPLICATE KEY UPDATE monto = VALUES(monto);
+
 -- Índices para mejorar rendimiento
 CREATE INDEX idx_personas_documento ON personas(numero_documento);
 CREATE INDEX idx_personas_nombres ON personas(nombres, apellido_paterno);
@@ -127,4 +146,6 @@ CREATE INDEX idx_agremiados_persona ON agremiados(persona_id);
 CREATE INDEX idx_aportaciones_periodo ON aportaciones(periodo);
 CREATE INDEX idx_aportaciones_estado ON aportaciones(estado);
 CREATE INDEX idx_aportaciones_agremiado ON aportaciones(agremiado_id);
+CREATE INDEX idx_config_montos_periodo ON configuracion_montos(periodo_inicio, periodo_fin);
+CREATE INDEX idx_config_montos_active ON configuracion_montos(is_active);
 

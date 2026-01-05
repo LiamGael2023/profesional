@@ -73,63 +73,144 @@ require_once APP_PATH . '/views/layouts/header.php';
                         </div>
                     </form>
 
-                    <div class="table-responsive">
-                        <table class="table table-vcenter">
-                            <thead>
-                                <tr>
-                                    <th>Período</th>
-                                    <?php if (!$agremiado): ?>
-                                        <th>Agremiado</th>
-                                    <?php endif; ?>
-                                    <th>Monto</th>
-                                    <th>Estado</th>
-                                    <th>Vencimiento</th>
-                                    <th>Fecha Pago</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($aportaciones)): ?>
+                    <!-- Formulario de pago múltiple -->
+                    <form id="formPagoMultiple" action="<?php echo APP_URL; ?>/aportaciones/pagarMultiple" method="POST">
+                        <?php if ($agremiado): ?>
+                            <input type="hidden" name="agremiado_id" value="<?php echo $agremiado['id']; ?>">
+                        <?php endif; ?>
+
+                        <div class="mb-3">
+                            <button type="button" id="btnPagarSeleccionadas" class="btn btn-success" disabled>
+                                <i class="ti ti-cash"></i> Pagar Seleccionadas (<span id="contadorSeleccionadas">0</span>)
+                            </button>
+                            <button type="button" id="btnSeleccionarTodas" class="btn btn-outline-primary">
+                                <i class="ti ti-checkbox"></i> Seleccionar todas pendientes
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-vcenter">
+                                <thead>
                                     <tr>
-                                        <td colspan="<?php echo $agremiado ? '6' : '7'; ?>" class="text-center text-muted">
-                                            No hay aportaciones registradas
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php
-                                    $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-                                    foreach ($aportaciones as $ap):
-                                        $badgeClass = 'bg-secondary';
-                                        if ($ap['estado'] == 'Pagado') $badgeClass = 'bg-success';
-                                        if ($ap['estado'] == 'Pendiente') $badgeClass = 'bg-warning';
-                                        if ($ap['estado'] == 'Vencido') $badgeClass = 'bg-danger';
-                                        if ($ap['estado'] == 'Exonerado') $badgeClass = 'bg-info';
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $meses[$ap['mes']] . ' ' . $ap['anio']; ?></td>
+                                        <th width="40">
+                                            <input type="checkbox" id="checkTodas" class="form-check-input">
+                                        </th>
+                                        <th>Período</th>
                                         <?php if (!$agremiado): ?>
-                                            <td>
-                                                <?php echo htmlspecialchars($ap['apellido_paterno'] . ' ' . $ap['apellido_materno'] . ', ' . $ap['nombres']); ?>
-                                                <br><small class="text-muted"><?php echo htmlspecialchars($ap['numero_colegiatura']); ?></small>
-                                            </td>
+                                            <th>Agremiado</th>
                                         <?php endif; ?>
-                                        <td>S/ <?php echo number_format($ap['monto'], 2); ?></td>
-                                        <td><span class="badge <?php echo $badgeClass; ?>"><?php echo $ap['estado']; ?></span></td>
-                                        <td><?php echo $ap['fecha_vencimiento'] ? date('d/m/Y', strtotime($ap['fecha_vencimiento'])) : '-'; ?></td>
-                                        <td><?php echo $ap['fecha_pago'] ? date('d/m/Y', strtotime($ap['fecha_pago'])) : '-'; ?></td>
-                                        <td>
-                                            <?php if ($ap['estado'] == 'Pendiente' || $ap['estado'] == 'Vencido'): ?>
-                                                <a href="<?php echo APP_URL; ?>/aportaciones/pagar?id=<?php echo $ap['id']; ?>" class="btn btn-sm btn-success">
-                                                    <i class="ti ti-cash"></i> Registrar Pago
-                                                </a>
-                                            <?php endif; ?>
-                                        </td>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                        <th>Vencimiento</th>
+                                        <th>Fecha Pago</th>
                                     </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($aportaciones)): ?>
+                                        <tr>
+                                            <td colspan="<?php echo $agremiado ? '7' : '8'; ?>" class="text-center text-muted">
+                                                No hay aportaciones registradas
+                                            </td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php
+                                        $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                                        foreach ($aportaciones as $ap):
+                                            $badgeClass = 'bg-secondary';
+                                            if ($ap['estado'] == 'Pagado') $badgeClass = 'bg-success';
+                                            if ($ap['estado'] == 'Pendiente') $badgeClass = 'bg-warning';
+                                            if ($ap['estado'] == 'Vencido') $badgeClass = 'bg-danger';
+                                            if ($ap['estado'] == 'Exonerado') $badgeClass = 'bg-info';
+
+                                            $puedePagar = ($ap['estado'] == 'Pendiente' || $ap['estado'] == 'Vencido');
+                                        ?>
+                                        <tr>
+                                            <td>
+                                                <?php if ($puedePagar): ?>
+                                                    <input type="checkbox" name="aportaciones[]" value="<?php echo $ap['id']; ?>"
+                                                           class="form-check-input checkbox-aportacion"
+                                                           data-monto="<?php echo $ap['monto']; ?>">
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><?php echo $meses[$ap['mes']] . ' ' . $ap['anio']; ?></td>
+                                            <?php if (!$agremiado): ?>
+                                                <td>
+                                                    <?php echo htmlspecialchars($ap['apellido_paterno'] . ' ' . $ap['apellido_materno'] . ', ' . $ap['nombres']); ?>
+                                                    <br><small class="text-muted"><?php echo htmlspecialchars($ap['numero_colegiatura']); ?></small>
+                                                </td>
+                                            <?php endif; ?>
+                                            <td>S/ <?php echo number_format($ap['monto'], 2); ?></td>
+                                            <td><span class="badge <?php echo $badgeClass; ?>"><?php echo $ap['estado']; ?></span></td>
+                                            <td><?php echo $ap['fecha_vencimiento'] ? date('d/m/Y', strtotime($ap['fecha_vencimiento'])) : '-'; ?></td>
+                                            <td><?php echo $ap['fecha_pago'] ? date('d/m/Y', strtotime($ap['fecha_pago'])) : '-'; ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const checkboxes = document.querySelectorAll('.checkbox-aportacion');
+                        const btnPagar = document.getElementById('btnPagarSeleccionadas');
+                        const contador = document.getElementById('contadorSeleccionadas');
+                        const checkTodas = document.getElementById('checkTodas');
+                        const btnSeleccionarTodas = document.getElementById('btnSeleccionarTodas');
+
+                        function actualizarContador() {
+                            const seleccionadas = document.querySelectorAll('.checkbox-aportacion:checked');
+                            const count = seleccionadas.length;
+                            contador.textContent = count;
+                            btnPagar.disabled = count === 0;
+
+                            // Calcular total
+                            let total = 0;
+                            seleccionadas.forEach(cb => {
+                                total += parseFloat(cb.dataset.monto || 0);
+                            });
+
+                            if (count > 0) {
+                                contador.textContent = count + ' - S/ ' + total.toFixed(2);
+                            } else {
+                                contador.textContent = '0';
+                            }
+                        }
+
+                        checkboxes.forEach(cb => {
+                            cb.addEventListener('change', actualizarContador);
+                        });
+
+                        checkTodas.addEventListener('change', function() {
+                            checkboxes.forEach(cb => {
+                                cb.checked = this.checked;
+                            });
+                            actualizarContador();
+                        });
+
+                        btnSeleccionarTodas.addEventListener('click', function() {
+                            checkboxes.forEach(cb => {
+                                cb.checked = true;
+                            });
+                            checkTodas.checked = true;
+                            actualizarContador();
+                        });
+
+                        btnPagar.addEventListener('click', function() {
+                            const seleccionadas = document.querySelectorAll('.checkbox-aportacion:checked');
+                            if (seleccionadas.length === 0) {
+                                alert('Seleccione al menos una aportación para pagar');
+                                return;
+                            }
+
+                            // Mostrar modal de confirmación con formulario
+                            if (confirm('¿Desea registrar el pago de ' + seleccionadas.length + ' aportación(es)?')) {
+                                document.getElementById('formPagoMultiple').submit();
+                            }
+                        });
+                    });
+                    </script>
                 </div>
             </div>
         </div>

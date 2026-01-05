@@ -33,6 +33,11 @@ class Aportacion {
             $query .= " AND ap.mes = :mes";
         }
 
+        // Filtrar solo hasta un período máximo (ej: 2026-01 para mostrar solo hasta enero 2026)
+        if (!empty($filters['periodo_max'])) {
+            $query .= " AND ap.periodo <= :periodo_max";
+        }
+
         $query .= " ORDER BY ap.anio DESC, ap.mes DESC";
 
         $stmt = $this->conn->prepare($query);
@@ -51,6 +56,10 @@ class Aportacion {
 
         if (!empty($filters['mes'])) {
             $stmt->bindParam(':mes', $filters['mes']);
+        }
+
+        if (!empty($filters['periodo_max'])) {
+            $stmt->bindParam(':periodo_max', $filters['periodo_max']);
         }
 
         $stmt->execute();
@@ -109,7 +118,7 @@ class Aportacion {
     }
 
     // Generar aportaciones mensuales desde una fecha hasta hoy + 3 meses futuros
-    public function generarAportacionesMensuales($agremiado_id, $fecha_inicio, $monto = 0.00, $created_by) {
+    public function generarAportacionesMensuales($agremiado_id, $fecha_inicio, $monto_default = 0.00, $created_by) {
         $fecha_inicio_obj = new DateTime($fecha_inicio);
         $fecha_actual = new DateTime();
 
@@ -120,6 +129,10 @@ class Aportacion {
         $aportaciones_creadas = 0;
         $aportaciones_existentes = 0;
 
+        // Obtener modelo de configuración de montos
+        require_once APP_PATH . '/models/ConfiguracionMonto.php';
+        $configuracionMontoModel = new ConfiguracionMonto($this->conn);
+
         // Iterar desde la fecha de inicio hasta 3 meses en el futuro
         while ($fecha_inicio_obj <= $fecha_limite) {
             $anio = (int)$fecha_inicio_obj->format('Y');
@@ -128,6 +141,14 @@ class Aportacion {
 
             // Verificar si ya existe
             if (!$this->existePeriodo($agremiado_id, $periodo)) {
+                // Obtener monto configurado para este período
+                $monto = $configuracionMontoModel->getMontoParaPeriodo($periodo);
+
+                // Si no hay configuración, usar monto por defecto
+                if ($monto === null || $monto === false) {
+                    $monto = $monto_default;
+                }
+
                 // Calcular fecha de vencimiento (último día del mes)
                 $fecha_vencimiento = $fecha_inicio_obj->format('Y-m-t');
 

@@ -13,6 +13,10 @@ if (strpos($requestUri, '/personas') !== false) {
     $currentPage = 'personas';
 } elseif (strpos($requestUri, '/agremiados') !== false) {
     $currentPage = 'agremiados';
+} elseif (strpos($requestUri, '/aportaciones') !== false) {
+    $currentPage = 'aportaciones';
+} elseif (strpos($requestUri, '/configuracion-montos') !== false) {
+    $currentPage = 'configuracion-montos';
 } elseif (strpos($requestUri, '/settings') !== false) {
     $currentPage = 'settings';
 } elseif (strpos($requestUri, '/dashboard') !== false) {
@@ -190,6 +194,10 @@ if (strpos($requestUri, '/personas') !== false) {
                                 <div class="dropdown-menu">
                                     <div class="dropdown-menu-columns">
                                         <div class="dropdown-menu-column">
+                                            <a class="dropdown-item" href="<?php echo APP_URL; ?>/configuracion-montos">
+                                                <i class="ti ti-coin me-2"></i>
+                                                Configuración de Montos
+                                            </a>
                                             <a class="dropdown-item" href="#">
                                                 <i class="ti ti-chart-bar me-2"></i>
                                                 Reportes

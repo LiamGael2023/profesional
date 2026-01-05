@@ -107,6 +107,15 @@ switch ($controller) {
         }
         break;
 
+    case 'configuracion-montos':
+        $configuracionMontoController = new ConfiguracionMontoController();
+        if (method_exists($configuracionMontoController, $method)) {
+            call_user_func_array([$configuracionMontoController, $method], $params);
+        } else {
+            $configuracionMontoController->index();
+        }
+        break;
+
     case '':
     case 'home':
     case 'index':

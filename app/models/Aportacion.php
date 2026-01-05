@@ -108,16 +108,20 @@ class Aportacion {
         return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
     }
 
-    // Generar aportaciones mensuales desde una fecha hasta hoy
+    // Generar aportaciones mensuales desde una fecha hasta hoy + 3 meses futuros
     public function generarAportacionesMensuales($agremiado_id, $fecha_inicio, $monto = 0.00, $created_by) {
         $fecha_inicio_obj = new DateTime($fecha_inicio);
         $fecha_actual = new DateTime();
 
+        // Generar hasta 3 meses en el futuro
+        $fecha_limite = clone $fecha_actual;
+        $fecha_limite->modify('+3 months');
+
         $aportaciones_creadas = 0;
         $aportaciones_existentes = 0;
 
-        // Iterar desde la fecha de inicio hasta el mes actual
-        while ($fecha_inicio_obj <= $fecha_actual) {
+        // Iterar desde la fecha de inicio hasta 3 meses en el futuro
+        while ($fecha_inicio_obj <= $fecha_limite) {
             $anio = (int)$fecha_inicio_obj->format('Y');
             $mes = (int)$fecha_inicio_obj->format('m');
             $periodo = $fecha_inicio_obj->format('Y-m');

@@ -43,13 +43,14 @@ class ConfiguracionMonto {
     public function getMontoParaPeriodo($periodo) {
         $query = "SELECT monto FROM " . $this->table . "
                   WHERE is_active = 1
-                  AND periodo_inicio <= :periodo
-                  AND (periodo_fin IS NULL OR periodo_fin >= :periodo)
+                  AND periodo_inicio <= :periodo1
+                  AND (periodo_fin IS NULL OR periodo_fin >= :periodo2)
                   ORDER BY periodo_inicio DESC
                   LIMIT 1";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':periodo', $periodo);
+        $stmt->bindValue(':periodo1', $periodo);
+        $stmt->bindValue(':periodo2', $periodo);
         $stmt->execute();
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);

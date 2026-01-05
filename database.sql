@@ -96,10 +96,35 @@ CREATE TABLE IF NOT EXISTS agremiados (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla de aportaciones mensuales
+CREATE TABLE IF NOT EXISTS aportaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    agremiado_id INT NOT NULL,
+    periodo VARCHAR(7) NOT NULL, -- Formato: YYYY-MM
+    anio INT NOT NULL,
+    mes INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    estado ENUM('Pendiente', 'Pagado', 'Vencido', 'Exonerado') DEFAULT 'Pendiente',
+    fecha_vencimiento DATE,
+    fecha_pago DATE,
+    metodo_pago VARCHAR(50),
+    numero_operacion VARCHAR(100),
+    observaciones TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    FOREIGN KEY (agremiado_id) REFERENCES agremiados(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY unique_periodo (agremiado_id, periodo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Índices para mejorar rendimiento
 CREATE INDEX idx_personas_documento ON personas(numero_documento);
 CREATE INDEX idx_personas_nombres ON personas(nombres, apellido_paterno);
 CREATE INDEX idx_agremiados_colegiatura ON agremiados(numero_colegiatura);
 CREATE INDEX idx_agremiados_estado ON agremiados(estado);
 CREATE INDEX idx_agremiados_persona ON agremiados(persona_id);
+CREATE INDEX idx_aportaciones_periodo ON aportaciones(periodo);
+CREATE INDEX idx_aportaciones_estado ON aportaciones(estado);
+CREATE INDEX idx_aportaciones_agremiado ON aportaciones(agremiado_id);
 

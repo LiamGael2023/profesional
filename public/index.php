@@ -98,6 +98,15 @@ switch ($controller) {
         }
         break;
 
+    case 'aportaciones':
+        $aportacionController = new AportacionController();
+        if (method_exists($aportacionController, $method)) {
+            call_user_func_array([$aportacionController, $method], $params);
+        } else {
+            $aportacionController->index();
+        }
+        break;
+
     case '':
     case 'home':
     case 'index':

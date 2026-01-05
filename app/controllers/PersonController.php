@@ -24,6 +24,11 @@ class PersonController {
         $filters = ['search' => $search, 'is_active' => 1];
         $personas = $this->personModel->getAll($filters);
 
+        // Obtener IDs de personas que ya son agremiados
+        $agremiadoModel = new Agremiado($this->db);
+        $agremiados = $agremiadoModel->getAll();
+        $personasAgremiadas = array_column($agremiados, 'persona_id');
+
         require_once APP_PATH . '/views/personas/index.php';
     }
 

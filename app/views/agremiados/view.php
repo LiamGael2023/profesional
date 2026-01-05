@@ -164,6 +164,31 @@ require_once APP_PATH . '/views/layouts/header.php';
                         </div>
                     </div>
 
+                    <div class="card mt-3">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title">Aportaciones</h3>
+                        </div>
+                        <div class="card-body">
+                            <a href="<?php echo APP_URL; ?>/aportaciones?agremiado_id=<?php echo $agremiado['id']; ?>" class="btn btn-info w-100 mb-2">
+                                <i class="ti ti-list"></i> Ver Aportaciones
+                            </a>
+                            <a href="<?php echo APP_URL; ?>/aportaciones/generar?agremiado_id=<?php echo $agremiado['id']; ?>"
+                               class="btn btn-primary w-100"
+                               onclick="return confirm('¿Desea generar las aportaciones mensuales desde la fecha de <?php echo (!empty($agremiado['fecha_traslado']) && ($agremiado['tipo_incorporacion'] == 'Traslado' || $agremiado['tipo_incorporacion'] == 'Incorporación')) ? 'traslado/incorporación' : 'colegiatura'; ?>?');">
+                                <i class="ti ti-plus"></i> Generar Aportaciones
+                            </a>
+                            <small class="text-muted d-block mt-2">
+                                Se generarán desde: <?php
+                                if (!empty($agremiado['fecha_traslado']) && ($agremiado['tipo_incorporacion'] == 'Traslado' || $agremiado['tipo_incorporacion'] == 'Incorporación')) {
+                                    echo date('d/m/Y', strtotime($agremiado['fecha_traslado'])) . ' (Traslado)';
+                                } else {
+                                    echo date('d/m/Y', strtotime($agremiado['fecha_colegiatura'])) . ' (Colegiatura)';
+                                }
+                                ?>
+                            </small>
+                        </div>
+                    </div>
+
                     <?php if ($agremiado['estado'] == 'Inhabilitado' || $agremiado['estado'] == 'Suspendido'): ?>
                     <div class="card mt-3">
                         <div class="card-header bg-warning">

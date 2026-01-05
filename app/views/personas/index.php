@@ -74,7 +74,9 @@ require_once APP_PATH . '/views/layouts/header.php';
                                     <div class="btn-list flex-nowrap">
                                         <a href="<?php echo APP_URL; ?>/personas/view?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-primary"><i class="ti ti-eye"></i></a>
                                         <a href="<?php echo APP_URL; ?>/personas/edit?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-info"><i class="ti ti-edit"></i></a>
-                                        <a href="<?php echo APP_URL; ?>/agremiados/create?persona_id=<?php echo $p['id']; ?>" class="btn btn-sm btn-success"><i class="ti ti-user-plus"></i> Afiliar</a>
+                                        <?php if (!in_array($p['id'], $personasAgremiadas)): ?>
+                                            <a href="<?php echo APP_URL; ?>/agremiados/create?persona_id=<?php echo $p['id']; ?>" class="btn btn-sm btn-success"><i class="ti ti-user-plus"></i> Afiliar</a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

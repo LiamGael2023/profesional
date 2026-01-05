@@ -211,4 +211,61 @@ class Aportacion {
         $stmt = $this->conn->prepare($query);
         return $stmt->execute();
     }
+
+    // Actualizar montos de aportaciones según configuración de montos
+    public function actualizarMontosPorConfiguracion($agremiado_id = null, $solo_pendientes = true) {
+        // Obtener modelo de configuración de montos
+        require_once APP_PATH . '/models/ConfiguracionMonto.php';
+        $configuracionMontoModel = new ConfiguracionMonto($this->conn);
+
+        // Construir query base
+        $query = "SELECT id, periodo, monto FROM " . $this->table . " WHERE 1=1";
+
+        // Filtrar por agremiado si se especifica
+        if ($agremiado_id) {
+            $query .= " AND agremiado_id = :agremiado_id";
+        }
+
+        // Solo actualizar aportaciones pendientes o vencidas (no las pagadas)
+        if ($solo_pendientes) {
+            $query .= " AND estado IN ('Pendiente', 'Vencido')";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        if ($agremiado_id) {
+            $stmt->bindParam(':agremiado_id', $agremiado_id);
+        }
+
+        $stmt->execute();
+        $aportaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $actualizadas = 0;
+        $sin_cambios = 0;
+
+        foreach ($aportaciones as $aportacion) {
+            // Obtener monto configurado para este período
+            $monto_nuevo = $configuracionMontoModel->getMontoParaPeriodo($aportacion['periodo']);
+
+            // Si hay configuración y es diferente al monto actual, actualizar
+            if ($monto_nuevo !== null && $monto_nuevo !== false && $monto_nuevo != $aportacion['monto']) {
+                $updateQuery = "UPDATE " . $this->table . " SET monto = :monto WHERE id = :id";
+                $updateStmt = $this->conn->prepare($updateQuery);
+                $updateStmt->bindParam(':monto', $monto_nuevo);
+                $updateStmt->bindParam(':id', $aportacion['id']);
+
+                if ($updateStmt->execute()) {
+                    $actualizadas++;
+                }
+            } else {
+                $sin_cambios++;
+            }
+        }
+
+        return [
+            'actualizadas' => $actualizadas,
+            'sin_cambios' => $sin_cambios,
+            'total' => count($aportaciones)
+        ];
+    }
 }

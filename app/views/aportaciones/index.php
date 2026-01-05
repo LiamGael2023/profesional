@@ -31,6 +31,12 @@ require_once APP_PATH . '/views/layouts/header.php';
                         <?php endif; ?>
                     </h3>
                     <div class="card-actions">
+                        <a href="<?php echo APP_URL; ?>/aportaciones/actualizarMontos<?php echo $agremiado ? '?agremiado_id=' . $agremiado['id'] : ''; ?>"
+                           class="btn btn-warning me-2"
+                           onclick="return confirm('¿Está seguro de actualizar los montos de las aportaciones pendientes según la configuración de montos?\n\nEsto actualizará TODAS las aportaciones pendientes y vencidas<?php echo $agremiado ? ' de este agremiado' : ''; ?> con los montos configurados.');"
+                           title="Actualizar montos según configuración">
+                            <i class="ti ti-refresh"></i> Actualizar Montos
+                        </a>
                         <?php if ($agremiado): ?>
                             <a href="<?php echo APP_URL; ?>/agremiados/view?id=<?php echo $agremiado['id']; ?>" class="btn btn-secondary">
                                 <i class="ti ti-arrow-left"></i> Volver a Agremiado
@@ -39,6 +45,23 @@ require_once APP_PATH . '/views/layouts/header.php';
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-info alert-dismissible">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <div class="d-flex">
+                            <div>
+                                <i class="ti ti-info-circle me-2"></i>
+                            </div>
+                            <div>
+                                <h4 class="alert-title">Actualización de Montos</h4>
+                                <div class="text-muted">
+                                    Si cambió los montos en la <a href="<?php echo APP_URL; ?>/configuracion-montos" class="alert-link">Configuración de Montos</a>,
+                                    use el botón <strong>"Actualizar Montos"</strong> para aplicar los nuevos montos a las aportaciones pendientes y vencidas.
+                                    Las aportaciones ya pagadas NO se modificarán.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Filtros -->
                     <form method="GET" class="row mb-3">
                         <?php if ($agremiado): ?>

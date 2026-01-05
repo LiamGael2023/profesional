@@ -153,6 +153,7 @@ class AportacionController {
     // Procesar pago múltiple
     public function pagarMultiple() {
         $this->auth->requireAuth();
+        $user = $this->getUserData();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . APP_URL . '/aportaciones');
@@ -234,6 +235,31 @@ class AportacionController {
         }
 
         header('Location: ' . APP_URL . '/aportaciones' . ($agremiado_id ? '?agremiado_id=' . $agremiado_id : ''));
+        exit();
+    }
+
+    // Actualizar montos de aportaciones según configuración
+    public function actualizarMontos() {
+        $this->auth->requireAuth();
+
+        $agremiado_id = $_GET['agremiado_id'] ?? null;
+
+        $resultado = $this->aportacionModel->actualizarMontosPorConfiguracion($agremiado_id, true);
+
+        if ($resultado['actualizadas'] > 0) {
+            $_SESSION['success'] = "Se actualizaron {$resultado['actualizadas']} aportación(es) según la configuración de montos.";
+            if ($resultado['sin_cambios'] > 0) {
+                $_SESSION['success'] .= " {$resultado['sin_cambios']} aportación(es) ya tenían el monto correcto.";
+            }
+        } else {
+            $_SESSION['info'] = 'No se encontraron aportaciones para actualizar. Todas las aportaciones ya tienen el monto correcto según la configuración.';
+        }
+
+        if ($agremiado_id) {
+            header('Location: ' . APP_URL . '/aportaciones?agremiado_id=' . $agremiado_id);
+        } else {
+            header('Location: ' . APP_URL . '/aportaciones');
+        }
         exit();
     }
 

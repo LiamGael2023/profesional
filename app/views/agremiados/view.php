@@ -172,11 +172,12 @@ require_once APP_PATH . '/views/layouts/header.php';
                             <a href="<?php echo APP_URL; ?>/aportaciones?agremiado_id=<?php echo $agremiado['id']; ?>" class="btn btn-info w-100 mb-2">
                                 <i class="ti ti-list"></i> Ver Aportaciones
                             </a>
-                            <a href="<?php echo APP_URL; ?>/aportaciones/generar?agremiado_id=<?php echo $agremiado['id']; ?>"
-                               class="btn btn-primary w-100"
-                               onclick="return confirm('¿Desea generar las aportaciones mensuales desde la fecha de <?php echo (!empty($agremiado['fecha_traslado']) && ($agremiado['tipo_incorporacion'] == 'Traslado' || $agremiado['tipo_incorporacion'] == 'Incorporación')) ? 'traslado/incorporación' : 'colegiatura'; ?>?');">
+                            <button type="button" class="btn btn-primary w-100" id="btnGenerarAportaciones"
+                                    data-url="<?php echo APP_URL; ?>/aportaciones/generar?agremiado_id=<?php echo $agremiado['id']; ?>"
+                                    data-tipo-fecha="<?php echo (!empty($agremiado['fecha_traslado']) && ($agremiado['tipo_incorporacion'] == 'Traslado' || $agremiado['tipo_incorporacion'] == 'Incorporación')) ? 'traslado/incorporación' : 'colegiatura'; ?>"
+                                    data-fecha="<?php echo (!empty($agremiado['fecha_traslado']) && ($agremiado['tipo_incorporacion'] == 'Traslado' || $agremiado['tipo_incorporacion'] == 'Incorporación')) ? date('d/m/Y', strtotime($agremiado['fecha_traslado'])) : date('d/m/Y', strtotime($agremiado['fecha_colegiatura'])); ?>">
                                 <i class="ti ti-plus"></i> Generar Aportaciones
-                            </a>
+                            </button>
                             <small class="text-muted d-block mt-2">
                                 Se generarán desde: <?php
                                 if (!empty($agremiado['fecha_traslado']) && ($agremiado['tipo_incorporacion'] == 'Traslado' || $agremiado['tipo_incorporacion'] == 'Incorporación')) {
@@ -246,5 +247,36 @@ require_once APP_PATH . '/views/layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnGenerarAportaciones = document.getElementById('btnGenerarAportaciones');
+
+    if (btnGenerarAportaciones) {
+        btnGenerarAportaciones.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const tipoFecha = this.dataset.tipoFecha;
+            const fecha = this.dataset.fecha;
+
+            Swal.fire({
+                title: '¿Generar aportaciones?',
+                html: `¿Desea generar las aportaciones mensuales desde la fecha de <strong>${tipoFecha}</strong>?<br><br>
+                       <small class="text-muted">Fecha de inicio: <strong>${fecha}</strong><br>
+                       Se generarán hasta el mes actual + 3 meses futuros</small>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#206bc4',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="ti ti-plus me-1"></i> Sí, generar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    }
+});
+</script>
 
 <?php require_once APP_PATH . '/views/layouts/footer.php'; ?>

@@ -6,20 +6,6 @@ require_once APP_PATH . '/views/layouts/header.php';
 <div class="page-wrapper">
     <div class="page-body">
         <div class="container-xl">
-            <?php if (isset($_SESSION['success'])): ?>
-                <div class="alert alert-success alert-dismissible">
-                    <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
-                    <a class="btn-close" data-bs-dismiss="alert"></a>
-                </div>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['info'])): ?>
-                <div class="alert alert-info alert-dismissible">
-                    <?php echo $_SESSION['info']; unset($_SESSION['info']); ?>
-                    <a class="btn-close" data-bs-dismiss="alert"></a>
-                </div>
-            <?php endif; ?>
-
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -31,12 +17,12 @@ require_once APP_PATH . '/views/layouts/header.php';
                         <?php endif; ?>
                     </h3>
                     <div class="card-actions">
-                        <a href="<?php echo APP_URL; ?>/aportaciones/actualizarMontos<?php echo $agremiado ? '?agremiado_id=' . $agremiado['id'] : ''; ?>"
-                           class="btn btn-warning me-2"
-                           onclick="return confirm('¿Está seguro de actualizar los montos de las aportaciones pendientes según la configuración de montos?\n\nEsto actualizará TODAS las aportaciones pendientes y vencidas<?php echo $agremiado ? ' de este agremiado' : ''; ?> con los montos configurados.');"
+                        <button type="button" class="btn btn-warning me-2" id="btnActualizarMontos"
+                           data-url="<?php echo APP_URL; ?>/aportaciones/actualizarMontos<?php echo $agremiado ? '?agremiado_id=' . $agremiado['id'] : ''; ?>"
+                           data-agremiado="<?php echo $agremiado ? 'true' : 'false'; ?>"
                            title="Actualizar montos según configuración">
                             <i class="ti ti-refresh"></i> Actualizar Montos
-                        </a>
+                        </button>
                         <?php if ($agremiado): ?>
                             <a href="<?php echo APP_URL; ?>/agremiados/view?id=<?php echo $agremiado['id']; ?>" class="btn btn-secondary">
                                 <i class="ti ti-arrow-left"></i> Volver a Agremiado
@@ -181,6 +167,7 @@ require_once APP_PATH . '/views/layouts/header.php';
                         const contador = document.getElementById('contadorSeleccionadas');
                         const checkTodas = document.getElementById('checkTodas');
                         const btnSeleccionarTodas = document.getElementById('btnSeleccionarTodas');
+                        const btnActualizarMontos = document.getElementById('btnActualizarMontos');
 
                         function actualizarContador() {
                             const seleccionadas = document.querySelectorAll('.checkbox-aportacion:checked');
@@ -223,15 +210,53 @@ require_once APP_PATH . '/views/layouts/header.php';
                         btnPagar.addEventListener('click', function() {
                             const seleccionadas = document.querySelectorAll('.checkbox-aportacion:checked');
                             if (seleccionadas.length === 0) {
-                                alert('Seleccione al menos una aportación para pagar');
+                                Toast.fire({
+                                    icon: 'warning',
+                                    title: 'Seleccione al menos una aportación para pagar'
+                                });
                                 return;
                             }
 
-                            // Mostrar modal de confirmación con formulario
-                            if (confirm('¿Desea registrar el pago de ' + seleccionadas.length + ' aportación(es)?')) {
-                                document.getElementById('formPagoMultiple').submit();
-                            }
+                            // Mostrar confirmación con SweetAlert
+                            Swal.fire({
+                                title: '¿Registrar pago?',
+                                html: `¿Desea registrar el pago de <strong>${seleccionadas.length}</strong> aportación(es)?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#206bc4',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Sí, registrar',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    document.getElementById('formPagoMultiple').submit();
+                                }
+                            });
                         });
+
+                        // Botón actualizar montos
+                        if (btnActualizarMontos) {
+                            btnActualizarMontos.addEventListener('click', function() {
+                                const url = this.dataset.url;
+                                const esAgremiado = this.dataset.agremiado === 'true';
+
+                                Swal.fire({
+                                    title: '¿Actualizar montos?',
+                                    html: `¿Está seguro de actualizar los montos de las aportaciones pendientes según la configuración de montos?<br><br>
+                                           <small class="text-muted">Esto actualizará TODAS las aportaciones pendientes y vencidas${esAgremiado ? ' de este agremiado' : ''} con los montos configurados.</small>`,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#f59f00',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: '<i class="ti ti-refresh me-1"></i> Sí, actualizar',
+                                    cancelButtonText: 'Cancelar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = url;
+                                    }
+                                });
+                            });
+                        }
                     });
                     </script>
                 </div>

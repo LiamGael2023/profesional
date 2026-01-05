@@ -6,20 +6,6 @@ require_once APP_PATH . '/views/layouts/header.php';
 <div class="page-wrapper">
     <div class="page-body">
         <div class="container-xl">
-            <?php if (isset($_SESSION['success'])): ?>
-                <div class="alert alert-success alert-dismissible">
-                    <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
-                    <a class="btn-close" data-bs-dismiss="alert"></a>
-                </div>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['error'])): ?>
-                <div class="alert alert-danger alert-dismissible">
-                    <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
-                    <a class="btn-close" data-bs-dismiss="alert"></a>
-                </div>
-            <?php endif; ?>
-
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Configuración de Montos de Aportaciones</h3>
@@ -98,12 +84,13 @@ require_once APP_PATH . '/views/layouts/header.php';
                                                class="btn btn-sm btn-primary" title="Editar">
                                                 <i class="ti ti-pencil"></i>
                                             </a>
-                                            <a href="<?php echo APP_URL; ?>/configuracion-montos/delete?id=<?php echo $config['id']; ?>"
-                                               class="btn btn-sm btn-danger"
-                                               onclick="return confirm('¿Está seguro de eliminar esta configuración?')"
-                                               title="Eliminar">
+                                            <button type="button" class="btn btn-sm btn-danger btn-delete-config"
+                                                    data-url="<?php echo APP_URL; ?>/configuracion-montos/delete?id=<?php echo $config['id']; ?>"
+                                                    data-monto="<?php echo number_format($config['monto'], 2); ?>"
+                                                    data-periodo="<?php echo formatearPeriodo($config['periodo_inicio'], $meses); ?>"
+                                                    title="Eliminar">
                                                 <i class="ti ti-trash"></i>
-                                            </a>
+                                            </button>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -152,5 +139,34 @@ require_once APP_PATH . '/views/layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Botones de eliminar configuración
+    document.querySelectorAll('.btn-delete-config').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const monto = this.dataset.monto;
+            const periodo = this.dataset.periodo;
+
+            Swal.fire({
+                title: '¿Eliminar configuración?',
+                html: `¿Está seguro de eliminar la configuración de monto <strong>S/ ${monto}</strong> para <strong>${periodo}</strong>?<br><br>
+                       <small class="text-muted">Esta acción no se puede deshacer.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d63939',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="ti ti-trash me-1"></i> Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+});
+</script>
 
 <?php require_once APP_PATH . '/views/layouts/footer.php'; ?>

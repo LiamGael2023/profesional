@@ -171,6 +171,35 @@ class ConfiguracionMontoController {
         exit();
     }
 
+    // Eliminar configuración con AJAX (retorna JSON)
+    public function deleteAjax() {
+        $this->auth->requireAuth();
+        header('Content-Type: application/json');
+
+        $id = $_POST['id'] ?? null;
+
+        if (!$id) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID no especificado'
+            ]);
+            exit();
+        }
+
+        if ($this->configuracionMontoModel->delete($id)) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Configuración eliminada correctamente'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al eliminar la configuración'
+            ]);
+        }
+        exit();
+    }
+
     // Métodos auxiliares
     private function getUserData() {
         return [

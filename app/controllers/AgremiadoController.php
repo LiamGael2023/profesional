@@ -114,6 +114,106 @@ class AgremiadoController {
         require_once APP_PATH . '/views/agremiados/view.php';
     }
 
+    // Mostrar formulario de edición
+    public function edit() {
+        $this->auth->requireAuth();
+        $user = $this->getUserData();
+
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            $_SESSION['error'] = 'ID no especificado';
+            header('Location: ' . APP_URL . '/agremiados');
+            exit();
+        }
+
+        $agremiado = $this->agremiadoModel->getById($id);
+        if (!$agremiado) {
+            $_SESSION['error'] = 'Agremiado no encontrado';
+            header('Location: ' . APP_URL . '/agremiados');
+            exit();
+        }
+
+        require_once APP_PATH . '/views/agremiados/edit.php';
+    }
+
+    // Actualizar agremiado
+    public function update() {
+        $this->auth->requireAuth();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . APP_URL . '/agremiados');
+            exit();
+        }
+
+        $id = $_POST['id'] ?? null;
+
+        $data = [
+            'numero_colegiatura' => trim($_POST['numero_colegiatura']),
+            'fecha_colegiatura' => $_POST['fecha_colegiatura'],
+            'tipo_incorporacion' => $_POST['tipo_incorporacion'] ?? 'Normal',
+            'fecha_traslado' => !empty($_POST['fecha_traslado']) ? $_POST['fecha_traslado'] : null,
+            'universidad' => trim($_POST['universidad'] ?? ''),
+            'especialidad' => trim($_POST['especialidad'] ?? ''),
+            'anio_graduacion' => $_POST['anio_graduacion'] ?? null,
+            'estado' => $_POST['estado'] ?? 'Activo',
+            'fecha_habilitacion' => $_POST['fecha_habilitacion'] ?? date('Y-m-d'),
+            'observaciones' => trim($_POST['observaciones'] ?? '')
+        ];
+
+        if ($this->agremiadoModel->update($id, $data)) {
+            $_SESSION['success'] = 'Agremiado actualizado correctamente';
+        } else {
+            $_SESSION['error'] = 'Error al actualizar el agremiado';
+        }
+
+        header('Location: ' . APP_URL . '/agremiados');
+        exit();
+    }
+
+    // Eliminar agremiado
+    public function delete() {
+        $this->auth->requireAuth();
+
+        $id = $_POST['id'] ?? null;
+        if ($id && $this->agremiadoModel->delete($id)) {
+            $_SESSION['success'] = 'Agremiado eliminado correctamente';
+        } else {
+            $_SESSION['error'] = 'Error al eliminar el agremiado';
+        }
+
+        header('Location: ' . APP_URL . '/agremiados');
+        exit();
+    }
+
+    // Eliminar agremiado con AJAX (retorna JSON)
+    public function deleteAjax() {
+        $this->auth->requireAuth();
+        header('Content-Type: application/json');
+
+        $id = $_POST['id'] ?? null;
+
+        if (!$id) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID no especificado'
+            ]);
+            exit();
+        }
+
+        if ($this->agremiadoModel->delete($id)) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Agremiado eliminado correctamente'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al eliminar el agremiado'
+            ]);
+        }
+        exit();
+    }
+
     // Cambiar estado
     public function changeStatus() {
         $this->auth->requireAuth();

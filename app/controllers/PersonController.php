@@ -153,6 +153,35 @@ class PersonController {
         exit();
     }
 
+    // Eliminar persona con AJAX (retorna JSON)
+    public function deleteAjax() {
+        $this->auth->requireAuth();
+        header('Content-Type: application/json');
+
+        $id = $_POST['id'] ?? null;
+
+        if (!$id) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID no especificado'
+            ]);
+            exit();
+        }
+
+        if ($this->personModel->delete($id)) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Persona eliminada correctamente'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al eliminar la persona'
+            ]);
+        }
+        exit();
+    }
+
     // Ver detalle de persona
     public function view() {
         $this->auth->requireAuth();

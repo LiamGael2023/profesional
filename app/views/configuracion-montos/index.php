@@ -24,7 +24,7 @@ require_once APP_PATH . '/views/layouts/header.php';
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-vcenter">
+                        <table id="tablaConfiguracionMontos" class="table table-vcenter">
                             <thead>
                                 <tr>
                                     <th>Monto</th>
@@ -80,17 +80,19 @@ require_once APP_PATH . '/views/layouts/header.php';
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <a href="<?php echo APP_URL; ?>/configuracion-montos/edit?id=<?php echo $config['id']; ?>"
-                                               class="btn btn-sm btn-primary" title="Editar">
-                                                <i class="ti ti-pencil"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-danger btn-delete-config"
-                                                    data-url="<?php echo APP_URL; ?>/configuracion-montos/delete?id=<?php echo $config['id']; ?>"
-                                                    data-monto="<?php echo number_format($config['monto'], 2); ?>"
-                                                    data-periodo="<?php echo formatearPeriodo($config['periodo_inicio'], $meses); ?>"
-                                                    title="Eliminar">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
+                                            <div class="btn-list flex-nowrap">
+                                                <a href="<?php echo APP_URL; ?>/configuracion-montos/edit?id=<?php echo $config['id']; ?>"
+                                                   class="btn btn-sm btn-primary" title="Editar">
+                                                    <i class="ti ti-pencil"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-danger btn-delete-config"
+                                                        data-id="<?php echo $config['id']; ?>"
+                                                        data-monto="<?php echo number_format($config['monto'], 2); ?>"
+                                                        data-periodo="<?php echo formatearPeriodo($config['periodo_inicio'], $meses); ?>"
+                                                        title="Eliminar">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -142,28 +144,69 @@ require_once APP_PATH . '/views/layouts/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Botones de eliminar configuración
-    document.querySelectorAll('.btn-delete-config').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const url = this.dataset.url;
-            const monto = this.dataset.monto;
-            const periodo = this.dataset.periodo;
+    // Inicializar DataTable
+    const tabla = $('#tablaConfiguracionMontos').DataTable({
+        order: [[1, 'desc']], // Ordenar por período inicio (más reciente primero)
+        columnDefs: [
+            { orderable: false, targets: -1 } // Desactivar ordenamiento en columna de acciones
+        ]
+    });
 
-            Swal.fire({
-                title: '¿Eliminar configuración?',
-                html: `¿Está seguro de eliminar la configuración de monto <strong>S/ ${monto}</strong> para <strong>${periodo}</strong>?<br><br>
-                       <small class="text-muted">Esta acción no se puede deshacer.</small>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d63939',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="ti ti-trash me-1"></i> Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = url;
-                }
-            });
+    // Eliminar configuración con AJAX
+    $(document).on('click', '.btn-delete-config', function() {
+        const id = $(this).data('id');
+        const monto = $(this).data('monto');
+        const periodo = $(this).data('periodo');
+        const btn = $(this);
+
+        Swal.fire({
+            title: '¿Eliminar configuración?',
+            html: `¿Está seguro de eliminar la configuración de monto <strong>S/ ${monto}</strong> para <strong>${periodo}</strong>?<br><br>
+                   <small class="text-muted">Esta acción no se puede deshacer.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d63939',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="ti ti-trash me-1"></i> Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Realizar petición AJAX
+                $.ajax({
+                    url: '<?php echo APP_URL; ?>/configuracion-montos/deleteAjax',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { id: id },
+                    success: function(response) {
+                        if (response.success) {
+                            // Eliminar fila de DataTable
+                            tabla.row(btn.closest('tr')).remove().draw();
+
+                            // Mostrar mensaje de éxito
+                            Toast.fire({
+                                icon: 'success',
+                                title: response.message || 'Configuración eliminada correctamente'
+                            });
+                        } else {
+                            // Mostrar error
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message || 'No se pudo eliminar la configuración',
+                                icon: 'error',
+                                confirmButtonColor: '#206bc4'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ocurrió un error al procesar la solicitud',
+                            icon: 'error',
+                            confirmButtonColor: '#206bc4'
+                        });
+                    }
+                });
+            }
         });
     });
 });

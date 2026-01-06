@@ -20,29 +20,10 @@ require_once APP_PATH . '/views/layouts/header.php';
 
     <div class="page-body">
         <div class="container-xl">
-            <?php if (isset($_SESSION['success'])): ?>
-                <div class="alert alert-success alert-dismissible">
-                    <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
-                    <a class="btn-close" data-bs-dismiss="alert"></a>
-                </div>
-            <?php endif; ?>
-
-            <!-- Búsqueda -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <form method="GET">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Buscar por documento, nombre..." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
-                            <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i> Buscar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
             <!-- Listado -->
             <div class="card">
                 <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
+                    <table id="tablaPersonas" class="table table-vcenter card-table">
                         <thead>
                             <tr>
                                 <th>Documento</th>
@@ -72,10 +53,16 @@ require_once APP_PATH . '/views/layouts/header.php';
                                 <td><span class="badge bg-success">Activo</span></td>
                                 <td>
                                     <div class="btn-list flex-nowrap">
-                                        <a href="<?php echo APP_URL; ?>/personas/view?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-primary"><i class="ti ti-eye"></i></a>
-                                        <a href="<?php echo APP_URL; ?>/personas/edit?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-info"><i class="ti ti-edit"></i></a>
+                                        <a href="<?php echo APP_URL; ?>/personas/view?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-primary" title="Ver"><i class="ti ti-eye"></i></a>
+                                        <a href="<?php echo APP_URL; ?>/personas/edit?id=<?php echo $p['id']; ?>" class="btn btn-sm btn-info" title="Editar"><i class="ti ti-edit"></i></a>
                                         <?php if (!in_array($p['id'], $personasAgremiadas)): ?>
-                                            <a href="<?php echo APP_URL; ?>/agremiados/create?persona_id=<?php echo $p['id']; ?>" class="btn btn-sm btn-success"><i class="ti ti-user-plus"></i> Afiliar</a>
+                                            <button type="button" class="btn btn-sm btn-danger btn-delete-persona"
+                                                    data-id="<?php echo $p['id']; ?>"
+                                                    data-nombre="<?php echo htmlspecialchars($p['tipo_documento'] === 'RUC' ? $p['nombres'] : $p['apellido_paterno'] . ' ' . $p['apellido_materno'] . ', ' . $p['nombres']); ?>"
+                                                    title="Eliminar">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                            <a href="<?php echo APP_URL; ?>/agremiados/create?persona_id=<?php echo $p['id']; ?>" class="btn btn-sm btn-success" title="Afiliar"><i class="ti ti-user-plus"></i> Afiliar</a>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -88,4 +75,74 @@ require_once APP_PATH . '/views/layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar DataTable
+    const tabla = $('#tablaPersonas').DataTable({
+        order: [[1, 'asc']], // Ordenar por apellidos y nombres
+        columnDefs: [
+            { orderable: false, targets: -1 } // Desactivar ordenamiento en columna de acciones
+        ]
+    });
+
+    // Eliminar persona con AJAX
+    $(document).on('click', '.btn-delete-persona', function() {
+        const id = $(this).data('id');
+        const nombre = $(this).data('nombre');
+        const btn = $(this);
+
+        Swal.fire({
+            title: '¿Eliminar persona?',
+            html: `¿Está seguro de eliminar a <strong>${nombre}</strong>?<br><br>
+                   <small class="text-muted">Esta acción no se puede deshacer.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d63939',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="ti ti-trash me-1"></i> Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Realizar petición AJAX
+                $.ajax({
+                    url: '<?php echo APP_URL; ?>/personas/deleteAjax',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { id: id },
+                    success: function(response) {
+                        if (response.success) {
+                            // Eliminar fila de DataTable
+                            tabla.row(btn.closest('tr')).remove().draw();
+
+                            // Mostrar mensaje de éxito
+                            Toast.fire({
+                                icon: 'success',
+                                title: response.message || 'Persona eliminada correctamente'
+                            });
+                        } else {
+                            // Mostrar error
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message || 'No se pudo eliminar la persona',
+                                icon: 'error',
+                                confirmButtonColor: '#206bc4'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ocurrió un error al procesar la solicitud',
+                            icon: 'error',
+                            confirmButtonColor: '#206bc4'
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+
 <?php require_once APP_PATH . '/views/layouts/footer.php'; ?>
